@@ -15,14 +15,17 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { playButtonClickSound, playSliderSound } from "@/src/lib/audioUtils";
 
 /* ------------------------------------------------------------------ */
 /*  Props                                                             */
 /* ------------------------------------------------------------------ */
 
 export interface ConfigurationProps {
+  initialM: number;
+  initialN: number;
   /** Called when the user clicks "Start Game". */
-  onStart: (m: number, n: number) => void;
+  onStart: (m: number, n: number, userIsFirst: boolean) => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -54,9 +57,10 @@ const bulbVariants = {
 /*  Component                                                         */
 /* ------------------------------------------------------------------ */
 
-export default function Configuration({ onStart }: ConfigurationProps) {
-  const [m, setM] = useState(6);
-  const [n, setN] = useState(3);
+export default function Configuration({ initialM, initialN, onStart }: ConfigurationProps) {
+  const [m, setM] = useState(initialM);
+  const [n, setN] = useState(initialN);
+  const [userIsFirst, setUserIsFirst] = useState(true);
 
   /* Clamp n whenever m changes. */
   useEffect(() => {
@@ -64,19 +68,22 @@ export default function Configuration({ onStart }: ConfigurationProps) {
   }, [m, n]);
 
   const handleMChange = useCallback((val: number) => {
+    playSliderSound();
     setM(val);
   }, []);
 
   const handleNChange = useCallback(
     (val: number) => {
+      playSliderSound();
       setN(Math.min(val, m));
     },
     [m]
   );
 
   const handleStart = useCallback(() => {
-    onStart(m, n);
-  }, [m, n, onStart]);
+    playButtonClickSound();
+    onStart(m, n, userIsFirst);
+  }, [m, n, userIsFirst, onStart]);
 
   return (
     <motion.div
@@ -125,7 +132,7 @@ export default function Configuration({ onStart }: ConfigurationProps) {
           Preview
         </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-2.5 min-h-[3rem]">
+        <div className="flex flex-wrap items-center justify-center gap-2.5 h-[74px] w-[326px] mx-auto">
           <AnimatePresence mode="popLayout">
             {Array.from({ length: m }, (_, i) => (
               <motion.div
@@ -152,13 +159,47 @@ export default function Configuration({ onStart }: ConfigurationProps) {
           </AnimatePresence>
         </div>
 
-        <p className="text-[11px] text-zinc-600 text-center mt-2">
+        <p className="text-[11px] text-zinc-600 text-center mt-3">
           First{" "}
-          <span className="text-amber-500/80 font-semibold">{n}</span>{" "}
+          <span className="text-amber-500/80 font-semibold inline-block w-3.5 text-center">{n}</span>{" "}
           bulbs highlighted — at most{" "}
-          <span className="text-amber-500/80 font-semibold">{n}</span>{" "}
+          <span className="text-amber-500/80 font-semibold inline-block w-3.5 text-center">{n}</span>{" "}
           may be on simultaneously.
         </p>
+      </div>
+
+      {/* ---- Player Order Toggle ---- */}
+      <div className="flex bg-zinc-900/80 border border-zinc-800 rounded-full p-1">
+        <button
+          type="button"
+          onClick={() => {
+            playButtonClickSound();
+            setUserIsFirst(true);
+          }}
+          className={[
+            "px-6 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer",
+            userIsFirst
+              ? "bg-amber-500/20 text-amber-400"
+              : "text-zinc-500 hover:text-zinc-300",
+          ].join(" ")}
+        >
+          Play First
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            playButtonClickSound();
+            setUserIsFirst(false);
+          }}
+          className={[
+            "px-6 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer",
+            !userIsFirst
+              ? "bg-amber-500/20 text-amber-400"
+              : "text-zinc-500 hover:text-zinc-300",
+          ].join(" ")}
+        >
+          Play Second
+        </button>
       </div>
 
       {/* ---- Start Button ---- */}
@@ -170,7 +211,7 @@ export default function Configuration({ onStart }: ConfigurationProps) {
         className={[
           "relative px-10 py-3.5 rounded-full font-semibold text-sm tracking-wide",
           "bg-gradient-to-r from-amber-500 to-orange-600",
-          "text-zinc-950 shadow-lg shadow-amber-500/20",
+          "text-zinc-950 shadow-lg shadow-amber-500/20 cursor-pointer",
           "hover:shadow-amber-500/40 transition-shadow duration-300",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950",
         ].join(" ")}

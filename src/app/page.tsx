@@ -3,8 +3,8 @@
 /**
  * page.tsx — Main game orchestrator.
  *
- * State machine:  landing → config → loading → playing → gameover
- *                                       ↑__________________________|
+ * State machine:  landing → config → loading → playing → ending → gameover
+ *                                       ↑________________________________|
  *
  * Connects the Configuration UI, the Wasm Web Worker, and the GameBoard
  * into a single game loop.
@@ -15,18 +15,25 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import Configuration from "@/src/components/Configuration";
 import GameBoard from "@/src/components/GameBoard";
+import VisitedPanel from "@/src/components/VisitedPanel";
 import {
   toggleBit,
   countSetBits,
   getValidMoves,
   NO_MOVE,
 } from "@/src/lib/gameUtils";
+import {
+  playButtonClickSound,
+  playWinDetectedSound,
+  playLoseDetectedSound,
+  playFlickerSound,
+} from "@/src/lib/audioUtils";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                             */
 /* ------------------------------------------------------------------ */
 
-type Phase = "landing" | "config" | "loading" | "playing" | "gameover";
+type Phase = "landing" | "config" | "loading" | "playing" | "ending" | "gameover";
 type Winner = "Player" | "Bot";
 
 /* ------------------------------------------------------------------ */
@@ -42,7 +49,7 @@ const BOT_DELAY_MS = 450;
 export default function Home() {
   /* ---- core game state ---- */
   const [phase, setPhase] = useState<Phase>("landing");
-  const [m, setM] = useState(6);
+  const [m, setM] = useState(7);
   const [n, setN] = useState(3);
   const [currentBoard, setCurrentBoard] = useState(0);
   const [winner, setWinner] = useState<Winner | null>(null);
@@ -51,6 +58,8 @@ export default function Home() {
   const [errorBulb, setErrorBulb] = useState<number | null>(null);
   const [screenFlash, setScreenFlash] = useState(false);
   const [isPlayerTurn, setIsPlayerTurn] = useState(true);
+  const [visitedArr, setVisitedArr] = useState<number[]>([0]);
+  const [highlightState, setHighlightState] = useState<number | null>(null);
 
   /* ---- refs (non-rendering data) ---- */
   const strategyRef = useRef<Uint16Array | null>(null);
@@ -59,6 +68,8 @@ export default function Home() {
   const errorTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const flashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const boardRef = useRef(0); // mirrors currentBoard for use inside timeouts
+  const applyBotMoveRef = useRef<(move: number) => void>(() => {});
+  const lastMoveIdx = useRef<number | null>(null);
 
   /* ---- cleanup worker on unmount ---- */
   useEffect(() => {
@@ -68,15 +79,93 @@ export default function Home() {
   }, []);
 
   /* ================================================================ */
+  /*  Ending sequence logic                                           */
+  /* ================================================================ */
+
+  useEffect(() => {
+    if (phase !== "ending" || winner === null) return;
+
+    let isMounted = true;
+
+    const runEndingSequence = async () => {
+      // 1. Wait a bit after the final move (longer suspense)
+      await new Promise((r) => setTimeout(r, 900));
+      if (!isMounted) return;
+
+      // 2. Horror movie flicker on the last moved bulb
+      if (lastMoveIdx.current !== null) {
+        const bit = 1 << lastMoveIdx.current;
+        for (let j = 0; j < 5; j++) {
+          setCurrentBoard((prev) => prev ^ bit);
+          playFlickerSound();
+          await new Promise((r) => setTimeout(r, 60 + Math.random() * 80));
+          if (!isMounted) return;
+        }
+        // Ensure it ends up in the correct state it was supposed to be before cascade
+        setCurrentBoard(boardRef.current);
+        await new Promise((r) => setTimeout(r, 500));
+        if (!isMounted) return;
+      }
+
+      // 3. Turn all lamps ON (win) or OFF (loss) sequentially
+      const isWin = winner === "Player";
+      
+      for (let i = 0; i < m; i++) {
+        if (!isMounted) return;
+        setCurrentBoard((prev) => {
+          const bit = 1 << i;
+          return isWin ? (prev | bit) : (prev & ~bit);
+        });
+        await new Promise((r) => setTimeout(r, 120));
+      }
+
+      // 4. Hold for dramatic effect
+      await new Promise((r) => setTimeout(r, 900));
+      if (!isMounted) return;
+
+      // 5. Proceed to gameover screen
+      setPhase("gameover");
+    };
+
+    runEndingSequence();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [phase, winner, m]);
+
+  const triggerGameEnd = useCallback((w: Winner) => {
+    setWinner(w);
+    setPhase("ending");
+    if (w === "Player") {
+      playWinDetectedSound();
+    } else {
+      playLoseDetectedSound();
+    }
+  }, []);
+
+  /* ================================================================ */
   /*  Phase transitions                                                */
   /* ================================================================ */
 
   /** Landing → Config */
-  const handleTap = useCallback(() => setPhase("config"), []);
+  const handleTap = useCallback(() => {
+    if (phase === "landing") {
+      playButtonClickSound();
+      setPhase("config");
+    }
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== "landing") return;
+    const handleKeyDown = () => handleTap();
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [phase, handleTap]);
 
   /** Config → Loading → Playing */
   const handleStart = useCallback(
-    (newM: number, newN: number) => {
+    (newM: number, newN: number, userIsFirst: boolean) => {
       setM(newM);
       setN(newN);
       setPhase("loading");
@@ -98,11 +187,30 @@ export default function Home() {
         if (data.type === "RESULT") {
           strategyRef.current = data.strategy as Uint16Array;
           visitedRef.current = new Set([0]);
+          setVisitedArr([0]);
           boardRef.current = 0;
           setCurrentBoard(0);
           setWinner(null);
-          setIsPlayerTurn(true);
+          setIsPlayerTurn(userIsFirst);
           setPhase("playing");
+
+          if (!userIsFirst) {
+            // Bot needs to play the first move!
+            worker.postMessage({
+              type: "BEST_MOVE",
+              m: newM,
+              n: newN,
+              currentState: 0,
+              visited: [0],
+            });
+          }
+          return;
+        }
+
+        if (data.type === "BEST_MOVE_RESULT") {
+          const move = data.move as number;
+          /* Small delay so the player sees their move before the bot responds. */
+          setTimeout(() => applyBotMoveRef.current(move), BOT_DELAY_MS);
           return;
         }
 
@@ -120,6 +228,7 @@ export default function Home() {
 
   /** GameOver → Config */
   const handlePlayAgain = useCallback(() => {
+    playButtonClickSound();
     setPhase("config");
     setWinner(null);
     strategyRef.current = null;
@@ -129,12 +238,17 @@ export default function Home() {
   /*  Error flash helper                                               */
   /* ================================================================ */
 
-  const flashError = useCallback((bulbIdx: number) => {
+  const flashError = useCallback((bulbIdx: number, confState?: number) => {
     clearTimeout(errorTimer.current);
     clearTimeout(flashTimer.current);
 
     setErrorBulb(bulbIdx);
     setScreenFlash(true);
+
+    if (confState !== undefined) {
+      setHighlightState(confState);
+      setTimeout(() => setHighlightState(null), 1000);
+    }
 
     errorTimer.current = setTimeout(() => setErrorBulb(null), 350);
     flashTimer.current = setTimeout(() => setScreenFlash(false), 300);
@@ -152,77 +266,82 @@ export default function Home() {
       const nextState = toggleBit(board, bulbIdx);
 
       /* ---- Validate ---- */
-      if (countSetBits(nextState) > n || visitedRef.current.has(nextState)) {
+      if (countSetBits(nextState) > n) {
         flashError(bulbIdx);
+        return;
+      }
+      if (visitedRef.current.has(nextState)) {
+        flashError(bulbIdx, nextState);
         return;
       }
 
       /* ---- Apply player move ---- */
+      lastMoveIdx.current = bulbIdx;
       visitedRef.current.add(nextState);
+      setVisitedArr((prev) => [...prev, nextState]);
       boardRef.current = nextState;
       setCurrentBoard(nextState);
       setIsPlayerTurn(false);
+
+      console.log(`[PLAYER] ${board.toString(2).padStart(m, '0')} → ${nextState.toString(2).padStart(m, '0')} (bulb ${bulbIdx})`);
 
       /* ---- Check if bot has any moves ---- */
       const botMoves = getValidMoves(nextState, m, n, visitedRef.current);
 
       if (botMoves.length === 0) {
-        /* Bot cannot move → Player wins */
-        setWinner("Player");
-        setPhase("gameover");
+        console.log(`[GAME] Bot has NO valid moves → PLAYER WINS`);
+        triggerGameEnd("Player");
         return;
       }
 
-      /* ---- Bot turn (after a short delay for UX) ---- */
-      setTimeout(() => {
-        const strategy = strategyRef.current;
-        let botMove: number | null = null;
-
-        /* Try the optimal matching move first. */
-        if (strategy) {
-          const optimal = strategy[nextState];
-          if (
-            optimal !== NO_MOVE &&
-            !visitedRef.current.has(optimal) &&
-            countSetBits(optimal) <= n
-          ) {
-            botMove = optimal;
-          }
-        }
-
-        /* Fallback: pick any legal move. */
-        if (botMove === null) {
-          const fallbacks = getValidMoves(
-            boardRef.current,
-            m,
-            n,
-            visitedRef.current
-          );
-          botMove = fallbacks.length > 0 ? fallbacks[0] : null;
-        }
-
-        if (botMove === null) {
-          /* Safety net — should be caught above. */
-          setWinner("Player");
-          setPhase("gameover");
-          return;
-        }
-
-        visitedRef.current.add(botMove);
-        boardRef.current = botMove;
-        setCurrentBoard(botMove);
-        setIsPlayerTurn(true);
-
-        /* ---- Check if player has any moves ---- */
-        const playerMoves = getValidMoves(botMove, m, n, visitedRef.current);
-        if (playerMoves.length === 0) {
-          setWinner("Bot");
-          setPhase("gameover");
-        }
-      }, BOT_DELAY_MS);
+      /* ---- Ask the worker for the optimal move ---- */
+      const visited = Array.from(visitedRef.current);
+      workerRef.current?.postMessage({
+        type: "BEST_MOVE",
+        m,
+        n,
+        currentState: nextState,
+        visited,
+      });
     },
-    [isPlayerTurn, phase, m, n, flashError]
+    [isPlayerTurn, phase, m, n, flashError, triggerGameEnd]
   );
+
+  /* ================================================================ */
+  /*  Handle worker responses (including bot moves)                    */
+  /* ================================================================ */
+
+  const applyBotMove = useCallback(
+    (botMove: number) => {
+      if (botMove === NO_MOVE) {
+        console.log(`[GAME] Bot has NO optimal move → PLAYER WINS`);
+        triggerGameEnd("Player");
+        return;
+      }
+
+      console.log(`[BOT] plays → ${botMove.toString(2).padStart(m, '0')}`);
+      
+      // Calculate which bit changed
+      const changedBit = Math.log2(boardRef.current ^ botMove);
+      lastMoveIdx.current = changedBit;
+
+      visitedRef.current.add(botMove);
+      setVisitedArr((prev) => [...prev, botMove]);
+      boardRef.current = botMove;
+      setCurrentBoard(botMove);
+      setIsPlayerTurn(true);
+
+      const playerMoves = getValidMoves(botMove, m, n, visitedRef.current);
+      console.log(`[GAME] Player has ${playerMoves.length} valid moves`);
+      if (playerMoves.length === 0) {
+        triggerGameEnd("Bot");
+      }
+    },
+    [m, n, triggerGameEnd]
+  );
+
+  /* Keep the ref in sync so the worker onmessage closure never goes stale. */
+  applyBotMoveRef.current = applyBotMove;
 
   /* ================================================================ */
   /*  Render                                                           */
@@ -253,8 +372,28 @@ export default function Home() {
         )}
       </AnimatePresence>
 
+      {/* ---- Visited States Sidebar (Desktop) ---- */}
+      <AnimatePresence>
+        {(phase === "playing" || phase === "ending") && (
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 50 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
+            <VisitedPanel m={m} visitedStates={visitedArr} highlightState={highlightState} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ---- Phase content ---- */}
-      <div className="relative z-10 flex flex-col items-center justify-center flex-1 w-full px-4 py-8">
+      <main
+        className={[
+          "relative flex flex-col items-center justify-center min-h-screen w-full px-4 py-8",
+          "transition-all duration-700 ease-in-out",
+          (phase === "playing" || phase === "ending") ? "pb-24 xl:pb-0 xl:pr-80" : "",
+        ].join(" ")}
+      >
         <AnimatePresence mode="wait">
           {/* ============ LANDING ============ */}
           {phase === "landing" && (
@@ -265,7 +404,7 @@ export default function Home() {
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.5 }}
               onClick={handleTap}
-              className="flex flex-col items-center gap-6 group cursor-pointer bg-transparent border-none"
+              className="fixed inset-0 w-full h-full flex flex-col items-center justify-center gap-6 group cursor-pointer bg-transparent border-none z-50 outline-none"
             >
               {/* Pulsing bulb icon */}
               <motion.div
@@ -286,7 +425,7 @@ export default function Home() {
                 <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-100">
                   Lamp Game
                 </h1>
-                <p className="text-sm text-zinc-500 group-hover:text-zinc-400 transition-colors">
+                <p className="text-sm text-zinc-500 group-hover:text-zinc-400 transition-colors mt-5">
                   Tap to Play
                 </p>
               </div>
@@ -302,7 +441,7 @@ export default function Home() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.35 }}
             >
-              <Configuration onStart={handleStart} />
+              <Configuration initialM={m} initialN={n} onStart={handleStart} />
             </motion.div>
           )}
 
@@ -332,8 +471,8 @@ export default function Home() {
             </motion.div>
           )}
 
-          {/* ============ PLAYING ============ */}
-          {phase === "playing" && (
+          {/* ============ PLAYING / ENDING ============ */}
+          {(phase === "playing" || phase === "ending") && (
             <motion.div
               key="playing"
               initial={{ opacity: 0 }}
@@ -345,7 +484,11 @@ export default function Home() {
               {/* Status bar */}
               <div className="text-center space-y-1">
                 <p className="text-xs uppercase tracking-widest text-zinc-500">
-                  {isPlayerTurn ? "Your Turn" : "Bot is thinking…"}
+                  {phase === "ending"
+                    ? "Game Over"
+                    : isPlayerTurn
+                    ? "Your Turn"
+                    : "Bot is thinking…"}
                 </p>
                 <p className="text-[11px] text-zinc-600 tabular-nums">
                   Moves played: {visitedRef.current.size - 1} ·{" "}
@@ -358,7 +501,7 @@ export default function Home() {
                 m={m}
                 currentBoard={currentBoard}
                 errorBulb={errorBulb}
-                disabled={!isPlayerTurn}
+                disabled={!isPlayerTurn || phase === "ending"}
                 onLampClick={handleLampClick}
               />
 
@@ -431,7 +574,7 @@ export default function Home() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.96 }}
                 className={[
-                  "px-8 py-3 rounded-full text-sm font-semibold tracking-wide",
+                  "px-8 py-3 rounded-full text-sm font-semibold tracking-wide cursor-pointer",
                   "bg-zinc-800 text-zinc-200 border border-zinc-700/60",
                   "hover:bg-zinc-700 transition-colors duration-200",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950",
@@ -442,7 +585,7 @@ export default function Home() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </main>
     </div>
   );
 }

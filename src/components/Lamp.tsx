@@ -14,6 +14,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { playClickSound, playErrorSound } from "@/src/lib/audioUtils";
 
 /* ------------------------------------------------------------------ */
 /*  Props                                                             */
@@ -33,55 +34,6 @@ export interface LampProps {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Tiny Web Audio helpers (no external files needed)                  */
-/* ------------------------------------------------------------------ */
-
-let audioCtx: AudioContext | null = null;
-
-function getAudioCtx(): AudioContext {
-  if (!audioCtx) {
-    audioCtx = new AudioContext();
-  }
-  return audioCtx;
-}
-
-/** Short tonal "click" — a quick sine blip. */
-function playClickSound(): void {
-  try {
-    const ctx = getAudioCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "sine";
-    osc.frequency.value = 660;
-    gain.gain.setValueAtTime(0.18, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.08);
-  } catch {
-    /* AudioContext may not be available in some environments. */
-  }
-}
-
-/** Harsh "buzz" for invalid moves — a low sawtooth burst. */
-function playErrorSound(): void {
-  try {
-    const ctx = getAudioCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "sawtooth";
-    osc.frequency.value = 110;
-    gain.gain.setValueAtTime(0.22, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.2);
-  } catch {
-    /* Swallow audio errors gracefully. */
-  }
-}
-
-/* ------------------------------------------------------------------ */
 /*  Component                                                         */
 /* ------------------------------------------------------------------ */
 
@@ -97,13 +49,16 @@ export default function Lamp({
   const flashTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
     if (isError) {
       setShowFlash(true);
       playErrorSound();
-      flashTimeout.current = setTimeout(() => setShowFlash(false), 300);
+      timer = setTimeout(() => setShowFlash(false), 300);
+    } else {
+      setShowFlash(false);
     }
     return () => {
-      if (flashTimeout.current) clearTimeout(flashTimeout.current);
+      if (timer) clearTimeout(timer);
     };
   }, [isError]);
 
