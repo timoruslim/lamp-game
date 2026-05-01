@@ -18,7 +18,11 @@
  *   Caller frees the returned buffer with free().
  */
 
+#ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#else
+#define EMSCRIPTEN_KEEPALIVE
+#endif
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
