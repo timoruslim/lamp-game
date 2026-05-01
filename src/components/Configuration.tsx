@@ -10,7 +10,7 @@
  * Features:
  *   • Framer Motion staggered entrance of preview bulbs as m changes.
  *   • Clamping logic so n can never exceed m.
- *   • Sleek dark "spooky but nice" aesthetic.
+ *   • Clean light-mode aesthetic.
  */
 
 import { useCallback, useEffect, useState } from "react";
@@ -95,7 +95,7 @@ export default function Configuration({ initialM, initialN, onStart }: Configura
     >
       {/* ---- Title ---- */}
       <div className="text-center space-y-2">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-100">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-800">
           Configure Game
         </h1>
         <p className="text-sm text-zinc-500 max-w-xs mx-auto leading-relaxed">
@@ -111,7 +111,7 @@ export default function Configuration({ initialM, initialN, onStart }: Configura
           symbol="m"
           value={m}
           min={1}
-          max={16}
+          max={12}
           onChange={handleMChange}
         />
 
@@ -128,11 +128,14 @@ export default function Configuration({ initialM, initialN, onStart }: Configura
 
       {/* ---- Preview Bulbs ---- */}
       <div className="w-full">
-        <p className="text-xs text-zinc-600 uppercase tracking-widest mb-3 text-center">
+        <p className="text-xs text-zinc-400 uppercase tracking-widest mb-3 text-center">
           Preview
         </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-2.5 h-[74px] w-[326px] mx-auto">
+        <div 
+          className="flex flex-wrap items-center justify-center mx-auto"
+          style={{ maxWidth: `${(m <= 6 ? m : Math.ceil(m / 2)) * 40}px` }}
+        >
           <AnimatePresence mode="popLayout">
             {Array.from({ length: m }, (_, i) => (
               <motion.div
@@ -143,15 +146,17 @@ export default function Configuration({ initialM, initialN, onStart }: Configura
                 animate="visible"
                 exit="exit"
                 layout
-                className={[
-                  "w-8 h-8 rounded-full flex items-center justify-center",
-                  "border border-zinc-700/50",
-                  i < n
-                    ? "bg-gradient-to-br from-amber-400/30 to-amber-600/20 shadow-[0_0_10px_2px_rgba(245,158,11,0.2)]"
-                    : "bg-zinc-800/80",
-                ].join(" ")}
+                className="w-10 h-10 flex items-center justify-center relative"
               >
-                <span className="text-[10px] font-mono text-zinc-400">
+                <img
+                  src={i < n ? "/icons/lamp_on.png" : "/icons/lamp_off.png"}
+                  alt={`Preview lamp ${i + 1}`}
+                  className="w-full h-full object-contain"
+                />
+                <span className={[
+                  "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -mt-0.5 text-[9px] font-mono font-bold",
+                  i < n ? "text-amber-950" : "text-zinc-600"
+                ].join(" ")}>
                   {i + 1}
                 </span>
               </motion.div>
@@ -159,17 +164,17 @@ export default function Configuration({ initialM, initialN, onStart }: Configura
           </AnimatePresence>
         </div>
 
-        <p className="text-[11px] text-zinc-600 text-center mt-3">
+        <p className="text-[11px] text-zinc-400 text-center mt-3">
           First{" "}
-          <span className="text-amber-500/80 font-semibold inline-block w-3.5 text-center">{n}</span>{" "}
+          <span className="text-amber-600 font-semibold inline-block w-3.5 text-center">{n}</span>{" "}
           bulbs highlighted — at most{" "}
-          <span className="text-amber-500/80 font-semibold inline-block w-3.5 text-center">{n}</span>{" "}
+          <span className="text-amber-600 font-semibold inline-block w-3.5 text-center">{n}</span>{" "}
           may be on simultaneously.
         </p>
       </div>
 
       {/* ---- Player Order Toggle ---- */}
-      <div className="flex bg-zinc-900/80 border border-zinc-800 rounded-full p-1">
+      <div className="flex bg-zinc-100 border border-zinc-200 rounded-full p-1">
         <button
           type="button"
           onClick={() => {
@@ -179,8 +184,8 @@ export default function Configuration({ initialM, initialN, onStart }: Configura
           className={[
             "px-6 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer",
             userIsFirst
-              ? "bg-amber-500/20 text-amber-400"
-              : "text-zinc-500 hover:text-zinc-300",
+              ? "bg-amber-500/20 text-amber-700"
+              : "text-zinc-400 hover:text-zinc-600",
           ].join(" ")}
         >
           Play First
@@ -194,8 +199,8 @@ export default function Configuration({ initialM, initialN, onStart }: Configura
           className={[
             "px-6 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer",
             !userIsFirst
-              ? "bg-amber-500/20 text-amber-400"
-              : "text-zinc-500 hover:text-zinc-300",
+              ? "bg-amber-500/20 text-amber-700"
+              : "text-zinc-400 hover:text-zinc-600",
           ].join(" ")}
         >
           Play Second
@@ -210,10 +215,10 @@ export default function Configuration({ initialM, initialN, onStart }: Configura
         whileTap={{ scale: 0.97 }}
         className={[
           "relative px-10 py-3.5 rounded-full font-semibold text-sm tracking-wide",
-          "bg-gradient-to-r from-amber-500 to-orange-600",
-          "text-zinc-950 shadow-lg shadow-amber-500/20 cursor-pointer",
+          "bg-gradient-to-r from-amber-500 to-orange-500",
+          "text-white shadow-lg shadow-amber-500/25 cursor-pointer",
           "hover:shadow-amber-500/40 transition-shadow duration-300",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
         ].join(" ")}
       >
         Start Game
@@ -240,11 +245,11 @@ function SliderRow({ label, symbol, value, min, max, onChange }: SliderRowProps)
     <div className="space-y-2">
       {/* Header row */}
       <div className="flex items-baseline justify-between">
-        <label className="text-sm font-medium text-zinc-300">
+        <label className="text-sm font-medium text-zinc-600">
           {label}{" "}
-          <span className="text-zinc-600 font-normal italic">({symbol})</span>
+          <span className="text-zinc-400 font-normal italic">({symbol})</span>
         </label>
-        <span className="text-lg font-bold tabular-nums text-amber-400">
+        <span className="text-lg font-bold tabular-nums text-amber-600">
           {value}
         </span>
       </div>
@@ -258,27 +263,27 @@ function SliderRow({ label, symbol, value, min, max, onChange }: SliderRowProps)
         onChange={(e) => onChange(Number(e.target.value))}
         className={[
           "w-full h-1.5 rounded-full appearance-none cursor-pointer",
-          "bg-zinc-800",
+          "bg-zinc-200",
           /* Webkit thumb */
           "[&::-webkit-slider-thumb]:appearance-none",
           "[&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4",
           "[&::-webkit-slider-thumb]:rounded-full",
-          "[&::-webkit-slider-thumb]:bg-amber-400",
-          "[&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(245,158,11,0.5)]",
+          "[&::-webkit-slider-thumb]:bg-amber-500",
+          "[&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(245,158,11,0.4)]",
           "[&::-webkit-slider-thumb]:transition-transform",
           "[&::-webkit-slider-thumb]:hover:scale-125",
           /* Firefox thumb */
           "[&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4",
           "[&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0",
-          "[&::-moz-range-thumb]:bg-amber-400",
-          "[&::-moz-range-thumb]:shadow-[0_0_8px_rgba(245,158,11,0.5)]",
+          "[&::-moz-range-thumb]:bg-amber-500",
+          "[&::-moz-range-thumb]:shadow-[0_0_8px_rgba(245,158,11,0.4)]",
         ].join(" ")}
       />
 
       {/* Ticks */}
       <div className="flex justify-between px-0.5">
-        <span className="text-[10px] text-zinc-600">{min}</span>
-        <span className="text-[10px] text-zinc-600">{max}</span>
+        <span className="text-[10px] text-zinc-400">{min}</span>
+        <span className="text-[10px] text-zinc-400">{max}</span>
       </div>
     </div>
   );

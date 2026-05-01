@@ -2,9 +2,9 @@ CC = emcc
 
 CFLAGS = -O3 -s WASM=1 -s EXPORTED_FUNCTIONS='["_compute_strategy", "_malloc", "_free"]' -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' -s ALLOW_MEMORY_GROWTH=1
 
-TARGET = ../public/wasm/game_solver.js
+TARGET = ../public/wasm/lamp_solver.js
 
-SOURCES = main.c
+SOURCES = lamp_solver.c
 
 all:
 	$(CC) $(SOURCES) -o $(TARGET) $(CFLAGS)

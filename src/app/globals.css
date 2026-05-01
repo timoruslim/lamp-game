@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
+  --background: #f8fafc;
+  --foreground: #18181b;
 }
 
 @theme inline {
@@ -12,9 +12,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* Force dark — no light mode for this game. */
+/* Light mode */
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
@@ -29,7 +29,7 @@ body {
 input[type="range"]::-webkit-slider-runnable-track {
   height: 6px;
   border-radius: 9999px;
-  background: #27272a;
+  background: #d4d4d8;
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -39,5 +39,5 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]::-moz-range-track {
   height: 6px;
   border-radius: 9999px;
-  background: #27272a;
+  background: #d4d4d8;
 }

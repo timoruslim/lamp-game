@@ -81,34 +81,22 @@ export function playFlickerSound(): void {
 /** Bright, happy chime to signal the player won. */
 export function playWinDetectedSound(): void {
   try {
-    const ctx = getAudioCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-    osc.frequency.exponentialRampToValueAtTime(1046.50, ctx.currentTime + 0.6); // C6
-    gain.gain.setValueAtTime(0.2, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.6);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.6);
+    if (typeof window !== "undefined") {
+      const audio = new Audio("/sound/win.wav");
+      audio.volume = 0.8; // adjust volume if needed
+      audio.play().catch(() => {});
+    }
   } catch {}
 }
 
 /** Deep swoosh / bass drop to signal the player lost. */
 export function playLoseDetectedSound(): void {
   try {
-    const ctx = getAudioCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "triangle";
-    osc.frequency.setValueAtTime(150, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.8);
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.8);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.8);
+    if (typeof window !== "undefined") {
+      const audio = new Audio("/sound/lose.wav");
+      audio.volume = 0.8; // adjust volume if needed
+      audio.play().catch(() => {});
+    }
   } catch {}
 }
 
@@ -132,16 +120,10 @@ export function playSliderSound(): void {
 /** High pitched bling for coin placement and collection. */
 export function playCoinSound(): void {
   try {
-    const ctx = getAudioCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(1400, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.1);
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.1);
+    if (typeof window !== "undefined") {
+      const audio = new Audio("/sound/coin_sound.mp3");
+      audio.volume = 0.6; // adjust volume if needed
+      audio.play().catch(() => {});
+    }
   } catch {}
 }

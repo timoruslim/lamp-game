@@ -13,11 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Light-Bulb Duel",
+  title: "ITBMO Arena",
   description:
-    "A mathematical combinatorial game: toggle bulbs, outwit a perfect bot, and master the Hopcroft-Karp strategy.",
+    "Play tactical board games online. Strategy meets AI in a battle of wits.",
   icons: {
-    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">💡</text></svg>',
+    icon: "/mcf.png",
   },
 };
 

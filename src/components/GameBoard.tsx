@@ -24,15 +24,15 @@ export default function GameBoard({
   onLampClick,
 }: GameBoardProps) {
   /* Pick a column count that keeps the grid looking balanced. */
-  const cols = m <= 4 ? m : m <= 8 ? 4 : m <= 12 ? 4 : 4;
+  const cols = m <= 6 ? m : Math.ceil(m / 2);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="flex flex-wrap items-center justify-center gap-4 sm:gap-5"
-      style={{ maxWidth: `${cols * 5.5}rem` }}
+      className="flex flex-wrap items-center justify-center"
+      style={{ maxWidth: `${cols * 8}rem` }}
     >
       {Array.from({ length: m }, (_, i) => (
         <Lamp

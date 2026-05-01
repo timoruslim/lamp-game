@@ -4,8 +4,8 @@
  * Lamp.tsx — A single light-bulb component with glow, click sound, and error flash.
  *
  * Visual states:
- *   OFF   → dark zinc circle, subtle border
- *   ON    → warm amber glow (box-shadow + background gradient)
+ *   OFF   → shows lamp_off.png
+ *   ON    → shows lamp_on.png
  *   ERROR → brief red flash overlay (300 ms)
  *
  * Audio: Uses the Web Audio API to synthesize a short "click" or "buzz" tone
@@ -90,7 +90,7 @@ export default function Lamp({
         className="absolute inset-0 rounded-full"
         style={{
           background:
-            "radial-gradient(circle, rgba(251,191,36,0.25) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(251,191,36,0.2) 0%, transparent 70%)",
           filter: "blur(8px)",
         }}
       />
@@ -98,28 +98,24 @@ export default function Lamp({
       {/* ---- Bulb body ---- */}
       <motion.div
         layout
-        animate={{
-          background: isOn
-            ? "radial-gradient(circle at 40% 35%, #fde68a, #f59e0b, #b45309)"
-            : "radial-gradient(circle at 40% 35%, #3f3f46, #27272a, #18181b)",
-          boxShadow: isOn
-            ? "0 0 20px 4px rgba(245,158,11,0.5), 0 0 60px 8px rgba(251,191,36,0.2)"
-            : "0 0 8px 0px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.04)",
-        }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
         className={[
-          "relative z-10 flex items-center justify-center rounded-full",
-          "w-14 h-14 sm:w-16 sm:h-16 md:w-[4.5rem] md:h-[4.5rem]",
-          "border border-zinc-700/60",
+          "relative z-10 flex items-center justify-center",
+          "w-20 h-20 sm:w-24 sm:h-24 md:w-[6.5rem] md:h-[6.5rem]",
           "cursor-pointer select-none",
           disabled ? "opacity-60 cursor-not-allowed" : "",
         ].join(" ")}
       >
+        <img
+          src={isOn ? "/icons/lamp_on.png" : "/icons/lamp_off.png"}
+          alt={`Lamp ${index + 1}`}
+          className="w-full h-full object-contain"
+        />
         {/* Filament / index label */}
         <span
           className={[
-            "text-xs font-mono font-bold transition-colors duration-200",
-            isOn ? "text-amber-950/80" : "text-zinc-500",
+            "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -mt-3 text-[10px] sm:text-xs font-mono font-bold transition-colors duration-200",
+            isOn ? "text-amber-950" : "text-zinc-600",
           ].join(" ")}
         >
           {index + 1}
@@ -137,8 +133,8 @@ export default function Lamp({
             transition={{ duration: 0.15 }}
             className="absolute inset-[-6px] rounded-full z-20 pointer-events-none"
             style={{
-              background: "radial-gradient(circle, rgba(153,27,27,0.7) 0%, rgba(127,29,29,0.3) 70%)",
-              boxShadow: "0 0 24px 6px rgba(220,38,38,0.4)",
+              background: "radial-gradient(circle, rgba(220,38,38,0.5) 0%, rgba(220,38,38,0.15) 70%)",
+              boxShadow: "0 0 24px 6px rgba(220,38,38,0.3)",
             }}
           />
         )}

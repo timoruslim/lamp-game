@@ -176,7 +176,7 @@ export default function Home() {
       /* Terminate any previous worker. */
       workerRef.current?.terminate();
 
-      const worker = new Worker("/solver.worker.js");
+      const worker = new Worker("/wasm/lamp.worker.js");
       workerRef.current = worker;
 
       worker.onmessage = (e: MessageEvent) => {
@@ -351,7 +351,7 @@ export default function Home() {
   /* ================================================================ */
 
   return (
-    <div className="relative flex flex-1 flex-col items-center justify-center min-h-screen bg-zinc-950 overflow-hidden">
+    <div className="relative flex flex-1 flex-col items-center justify-center min-h-screen bg-slate-50 overflow-hidden">
       {/* ---- Ambient background glow ---- */}
       <div
         className="pointer-events-none fixed inset-0 z-0"
@@ -370,7 +370,7 @@ export default function Home() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-50 pointer-events-none bg-red-900/40"
+            className="fixed inset-0 z-50 pointer-events-none bg-red-500/20"
           />
         )}
       </AnimatePresence>
@@ -400,7 +400,7 @@ export default function Home() {
           >
             <Link 
               href="/"
-              className="p-3 text-zinc-400 hover:text-zinc-100 transition-all duration-300 flex items-center justify-center hover:drop-shadow-[0_0_8px_rgba(244,244,245,0.6)]"
+              className="p-3 text-zinc-400 hover:text-zinc-700 transition-all duration-300 flex items-center justify-center"
               onClick={(e) => e.stopPropagation()}
             >
               <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -434,26 +434,20 @@ export default function Home() {
                 onClick={handleTap}
                 className="absolute inset-0 w-full h-full flex flex-col items-center justify-center gap-6 group cursor-pointer bg-transparent"
               >
-                {/* Pulsing bulb icon */}
+                {/* Floating bulb icon */}
                 <motion.div
-                  animate={{
-                    boxShadow: [
-                      "0 0 20px 4px rgba(245,158,11,0.2)",
-                      "0 0 40px 10px rgba(245,158,11,0.35)",
-                      "0 0 20px 4px rgba(245,158,11,0.2)",
-                    ],
-                  }}
-                  transition={{ duration: 2.5, repeat: Infinity }}
-                  className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400/20 to-amber-700/30 border border-amber-500/30 flex items-center justify-center"
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="w-32 h-32 flex items-center justify-center"
                 >
-                  <span className="text-3xl">💡</span>
+                  <img src="/icons/lamp_on.png" alt="Lamp" className="w-full h-full object-contain pb-1" />
                 </motion.div>
 
                 <div className="text-center space-y-2">
-                  <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-100">
+                  <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-800">
                     Lamp Game
                   </h1>
-                  <p className="text-sm text-zinc-500 group-hover:text-zinc-400 transition-colors mt-5">
+                  <p className="text-sm text-zinc-400 group-hover:text-zinc-600 transition-colors mt-5">
                     Tap or press Enter to Play
                   </p>
                 </div>
@@ -487,13 +481,13 @@ export default function Home() {
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                className="w-10 h-10 rounded-full border-2 border-zinc-700 border-t-amber-400"
+                className="w-10 h-10 rounded-full border-2 border-zinc-300 border-t-amber-500"
               />
               <div className="text-center space-y-1">
-                <p className="text-sm font-medium text-zinc-300">
+                <p className="text-sm font-medium text-zinc-600">
                   Computing Game Graph…
                 </p>
-                <p className="text-xs text-zinc-600">
+                <p className="text-xs text-zinc-400">
                   Building {(1 << m).toLocaleString()} states via Hopcroft-Karp
                 </p>
               </div>
@@ -519,7 +513,7 @@ export default function Home() {
                     ? "Your Turn"
                     : "Bot is thinking…"}
                 </p>
-                <p className="text-[11px] text-zinc-600 tabular-nums">
+                <p className="text-[11px] text-zinc-400 tabular-nums">
                   Moves played: {visitedRef.current.size - 1} ·{" "}
                   Bulbs ON: {countSetBits(currentBoard)}/{n}
                 </p>
@@ -535,7 +529,7 @@ export default function Home() {
               />
 
               {/* Subtle hint */}
-              <p className="text-[10px] text-zinc-700 max-w-xs text-center">
+              <p className="text-[10px] text-zinc-400 max-w-xs text-center">
                 Toggle a bulb. No state may repeat; at most {n} bulb
                 {n !== 1 ? "s" : ""} may glow at once.
               </p>
@@ -557,35 +551,33 @@ export default function Home() {
                   boxShadow:
                     winner === "Player"
                       ? [
-                          "0 0 30px 8px rgba(34,197,94,0.15)",
-                          "0 0 50px 16px rgba(34,197,94,0.25)",
-                          "0 0 30px 8px rgba(34,197,94,0.15)",
+                          "0 0 30px 8px rgba(34,197,94,0.1)",
+                          "0 0 50px 16px rgba(34,197,94,0.2)",
+                          "0 0 30px 8px rgba(34,197,94,0.1)",
                         ]
                       : [
-                          "0 0 30px 8px rgba(239,68,68,0.15)",
-                          "0 0 50px 16px rgba(239,68,68,0.25)",
-                          "0 0 30px 8px rgba(239,68,68,0.15)",
+                          "0 0 30px 8px rgba(239,68,68,0.1)",
+                          "0 0 50px 16px rgba(239,68,68,0.2)",
+                          "0 0 30px 8px rgba(239,68,68,0.1)",
                         ],
                 }}
                 transition={{ duration: 2, repeat: Infinity }}
                 className={[
-                  "w-28 h-28 rounded-full flex items-center justify-center",
+                  "w-36 h-36 rounded-full flex items-center justify-center",
                   "border-2",
                   winner === "Player"
-                    ? "border-emerald-500/40 bg-emerald-900/20"
-                    : "border-red-500/40 bg-red-900/20",
+                    ? "border-emerald-400/50 bg-emerald-50"
+                    : "border-red-400/50 bg-red-50",
                 ].join(" ")}
               >
-                <span className="text-5xl">
-                  {winner === "Player" ? "🎉" : "🤖"}
-                </span>
+                <img src={winner === "Player" ? "/icons/win_icon.png" : "/icons/lose_icon.png"} alt={winner === "Player" ? "Win" : "Lose"} className="w-32 h-32 object-contain" />
               </motion.div>
 
               <div className="space-y-2">
                 <h2
                   className={[
                     "text-3xl sm:text-4xl font-bold tracking-tight",
-                    winner === "Player" ? "text-emerald-400" : "text-red-400",
+                    winner === "Player" ? "text-emerald-600" : "text-red-500",
                   ].join(" ")}
                 >
                   {winner === "Player" ? "You Win!" : "Game Over"}
@@ -604,9 +596,9 @@ export default function Home() {
                 whileTap={{ scale: 0.96 }}
                 className={[
                   "px-8 py-3 rounded-full text-sm font-semibold tracking-wide cursor-pointer",
-                  "bg-zinc-800 text-zinc-200 border border-zinc-700/60",
-                  "hover:bg-zinc-700 transition-colors duration-200",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950",
+                  "bg-white text-zinc-700 border border-zinc-200 shadow-sm",
+                  "hover:bg-zinc-50 transition-colors duration-200",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
                 ].join(" ")}
               >
                 Play Again

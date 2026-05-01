@@ -27,7 +27,7 @@ var Module = {
 
 var _pendingRequest = null;
 
-importScripts("/wasm/game_solver.js");
+importScripts("./lamp_solver.js");
 
 /* ================================================================== */
 /*  COMPUTE handler — static strategy via Wasm                        */
