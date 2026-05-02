@@ -33,15 +33,14 @@ interface StageConfig {
   gameType: "lamp" | "coin";
   /** Lamp: m = total bulbs, n = max ON. Coin: n = rows, m = cols. */
   params: { m: number; n: number };
-  rules: string;
 }
 
 const stages: StageConfig[] = [
-  { id: 1, title: "Stage 1", subtitle: "Toggle 1 of 4 bulbs per turn. No state may repeat; at most 4 bulbs may glow at once.", gameType: "lamp", params: { m: 4, n: 4 }, rules: "" },
-  { id: 2, title: "Stage 2", subtitle: "Toggle 1 of 6 bulbs per turn. No state may repeat; at most 3 bulbs may glow at once.", gameType: "lamp", params: { m: 6, n: 3 }, rules: "" },
-  { id: 3, title: "Stage 3", subtitle: "Toggle 1 of 6 bulbs per turn. No state may repeat; at most 4 bulbs may glow at once.", gameType: "lamp", params: { m: 6, n: 4 }, rules: "" },
-  { id: 4, title: "Stage 4", subtitle: "Place a coin on a 10×10 grid. Coins cannot be horizontally or vertically adjacent. The last player to move wins.", gameType: "coin", params: { m: 10, n: 10 }, rules: "" },
-  { id: 5, title: "Stage 5", subtitle: "Place a coin on a 11×9 grid. Coins cannot be horizontally or vertically adjacent. The last player to move wins.", gameType: "coin", params: { m: 9, n: 11 }, rules: "" },
+  { id: 1, title: "Stage 1: Lamp Game (4, 4)", subtitle: "Toggle 1 of 4 bulbs per turn. No state may repeat. At most 4 bulbs may glow at once.", gameType: "lamp", params: { m: 4, n: 4 } },
+  { id: 2, title: "Stage 2: Lamp Game (6, 3)", subtitle: "Toggle 1 of 6 bulbs per turn. No state may repeat. At most 3 bulbs may glow at once.", gameType: "lamp", params: { m: 6, n: 3 } },
+  { id: 3, title: "Stage 3: Lamp Game (6, 4)", subtitle: "Toggle 1 of 6 bulbs per turn. No state may repeat. At most 4 bulbs may glow at once.", gameType: "lamp", params: { m: 6, n: 4 } },
+  { id: 4, title: "Stage 4: Coin Game (10, 10)", subtitle: "Place a coin on a 10×10 grid. Coins cannot be horizontally or vertically adjacent. The last player to move wins.", gameType: "coin", params: { m: 10, n: 10 } },
+  { id: 5, title: "Stage 5: Coin Game (9, 11)", subtitle: "Place a coin on a 9×11 grid. Coins cannot be horizontally or vertically adjacent. The last player to move wins.", gameType: "coin", params: { m: 9, n: 11 } },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -369,29 +368,29 @@ export default function GauntletHub() {
 
                 {/* Card content */}
                 <div className={`relative z-10 p-5 transition-opacity duration-300 ${isCompleted ? "opacity-50 grayscale" : ""}`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg font-bold text-white drop-shadow-sm">
-                          {stage.title}
-                        </span>
-                        {result && <ResultBadge result={result} />}
-                      </div>
-                      <p className="text-sm text-zinc-200 mt-1 drop-shadow-sm">
-                        {stage.subtitle}
-                      </p>
-                    </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-lg font-bold text-white drop-shadow-sm">
+                        {stage.title}
+                      </span>
 
-                    {!isCompleted && (
-                      <motion.div
-                        animate={{ rotate: isExpanded ? 180 : 0 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <svg className="w-5 h-5 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </motion.div>
-                    )}
+                      <div className="flex items-center gap-4 shrink-0">
+                        {result && <ResultBadge result={result} />}
+                        {!isCompleted && (
+                          <motion.div
+                            animate={{ rotate: isExpanded ? 180 : 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <svg className="w-5 h-5 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </motion.div>
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-sm text-zinc-200 drop-shadow-sm">
+                      {stage.subtitle}
+                    </p>
                   </div>
 
                   {/* Expanded: turn order selection */}
