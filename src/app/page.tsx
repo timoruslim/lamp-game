@@ -60,7 +60,7 @@ export default function ArenaHub() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="z-10 text-center mb-16 space-y-4"
       >
-        <h1 className="text-5xl md:text-7xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-amber-200 via-orange-300 to-amber-500 drop-shadow-[0_2px_10px_rgba(245,158,11,0.3)] uppercase">
+        <h1 className="text-5xl md:text-7xl drop-shadow-md font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#c23d11] to-[#f6d063] drop-shadow-[0_2px_10px_rgba(245,158,11,0.3)] uppercase">
           ITBMO Games
         </h1>
         <p className="text-lg md:text-xl text-zinc-200 max-w-2xl mx-auto font-medium drop-shadow-md">
@@ -72,15 +72,21 @@ export default function ArenaHub() {
         {games.map((game, i) => (
           <Link href={game.path} key={game.id} className="block group focus:outline-none h-full">
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: i * 0.15 }}
+              transition={{ 
+                type: "spring",
+                stiffness: 260,
+                damping: 20,
+                delay: i * 0.01 
+              }}
               whileHover={{ 
-                scale: 1.03, 
-                boxShadow: "0 12px 40px -8px rgba(0,0,0,0.5)" 
+                scale: 1.04, 
+                y: -8,
+                boxShadow: "0 20px 50px -12px rgba(0,0,0,0.5)" 
               }}
               whileTap={{ scale: 0.98 }}
-              className="relative h-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-8 overflow-hidden transition-all duration-300 group-hover:border-amber-400/60 group-hover:bg-white/20 shadow-xl"
+              className="relative h-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-8 overflow-hidden transition-colors duration-300 group-hover:border-amber-400/60 group-hover:bg-white/20 shadow-xl"
             >
               {/* Decorative hover glow */}
               <div className="absolute -inset-1 bg-gradient-to-br from-amber-500/0 to-orange-500/0 group-hover:from-amber-500/10 group-hover:to-orange-500/10 transition-all duration-500 blur-2xl" />
