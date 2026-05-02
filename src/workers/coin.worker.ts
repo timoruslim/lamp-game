@@ -29,8 +29,6 @@ let mirrorFirstMove = true;
  * and then mirrors — including mirroring that first non-center move.
  */
 let canStealMirror = false;      // true when odd×odd and bot is second
-let stealActivated = false;      // true once bot played center to steal
-let pendingStealMirror = -1;     // the human's first move that still needs mirroring
 
 function mirrorIndex(idx: number, n: number, m: number): number {
   const r = Math.floor(idx / m);
@@ -101,8 +99,6 @@ self.onmessage = (e: MessageEvent) => {
 
     // Bot is second on an odd×odd board: can steal mirror if human skips center
     canStealMirror = bothOdd && !botFirst;
-    stealActivated = false;
-    pendingStealMirror = -1;
 
     wasmModule.ccall("init_game", null, ["number", "number"], [n, m]);
     postMessage({ type: "INIT_DONE" });
@@ -116,45 +112,17 @@ self.onmessage = (e: MessageEvent) => {
     }
 
     // ---- Mirror-steal: odd×odd, bot is second ----
-    // If human's first move is NOT center, bot plays center and adopts mirror.
-    if (canStealMirror && !stealActivated) {
+    // If human's first move is NOT center, bot plays center and then relies on solver.
+    if (canStealMirror) {
+      canStealMirror = false; // Only attempt steal on the very first turn
       const center = centerIndex(n, m);
       if (lastHumanMove !== center) {
         // Human blundered! Bot steals center.
-        stealActivated = true;
-        pendingStealMirror = lastHumanMove; // remember — we owe a mirror of this move
         if (stateMask & (1n << BigInt(center))) {
           postMessage({ type: "BEST_MOVE_RESULT", move: center });
           return;
         }
-        // Center unexpectedly blocked — fall through to solver
-        stealActivated = false;
-        canStealMirror = false;
-      } else {
-        // Human played center — no steal opportunity, use solver
-        canStealMirror = false;
       }
-    }
-
-    // ---- Ongoing stolen mirror: mirror the pending first move or the latest move ----
-    if (stealActivated) {
-      let move: number;
-
-      if (pendingStealMirror >= 0) {
-        // We still owe a mirror of the human's first non-center move
-        move = mirrorIndex(pendingStealMirror, n, m);
-        pendingStealMirror = -1;
-      } else {
-        // Normal mirror of the last human move
-        move = mirrorIndex(lastHumanMove, n, m);
-      }
-
-      if (stateMask & (1n << BigInt(move))) {
-        postMessage({ type: "BEST_MOVE_RESULT", move });
-        return;
-      }
-      // Mirror cell blocked — symmetry broken, fall through to solver
-      stealActivated = false;
     }
 
     // ---- Standard mirror strategy (guaranteed win, O(1)) ----
