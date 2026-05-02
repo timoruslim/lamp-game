@@ -41,15 +41,19 @@ const computeMask = (currentBoard: CellState[]) => {
 
 function SliderRow({ label, symbol, value, min, max, onChange }: { label: string; symbol: string; value: number; min: number; max: number; onChange: (v: number) => void }) {
   return (
-    <div className="space-y-2 w-full">
+    <div className="space-y-2">
+      {/* Header row */}
       <div className="flex items-baseline justify-between">
         <label className="text-sm font-medium text-zinc-300">
-          {label} <span className="text-zinc-500 font-normal italic">({symbol})</span>
+          {label}{" "}
+          <span className="text-zinc-400 font-normal italic">({symbol})</span>
         </label>
         <span className="text-lg font-bold tabular-nums text-amber-500">
           {value}
         </span>
       </div>
+
+      {/* Slider */}
       <input
         type="range"
         min={min}
@@ -59,6 +63,7 @@ function SliderRow({ label, symbol, value, min, max, onChange }: { label: string
         className={[
           "w-full h-1.5 rounded-full appearance-none cursor-pointer",
           "bg-white/10",
+          /* Webkit thumb */
           "[&::-webkit-slider-thumb]:appearance-none",
           "[&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4",
           "[&::-webkit-slider-thumb]:rounded-full",
@@ -66,15 +71,18 @@ function SliderRow({ label, symbol, value, min, max, onChange }: { label: string
           "[&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(245,158,11,0.4)]",
           "[&::-webkit-slider-thumb]:transition-transform",
           "[&::-webkit-slider-thumb]:hover:scale-125",
+          /* Firefox thumb */
           "[&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4",
           "[&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0",
           "[&::-moz-range-thumb]:bg-amber-500",
           "[&::-moz-range-thumb]:shadow-[0_0_8px_rgba(245,158,11,0.4)]",
         ].join(" ")}
       />
+
+      {/* Ticks */}
       <div className="flex justify-between px-0.5">
-        <span className="text-[10px] text-zinc-500">{min}</span>
-        <span className="text-[10px] text-zinc-500">{max}</span>
+        <span className="text-[10px] text-zinc-400">{min}</span>
+        <span className="text-[10px] text-zinc-400">{max}</span>
       </div>
     </div>
   );
@@ -355,7 +363,7 @@ function CoinGameInner() {
           >
             <Link
               href={gauntletMode ? "/gauntlet" : "/"}
-              className="p-3 text-zinc-400 hover:text-zinc-700 transition-all duration-300 flex items-center justify-center"
+              className="p-3 text-zinc-400 hover:text-white transition-all duration-300 flex items-center justify-center"
               onClick={(e) => e.stopPropagation()}
             >
               <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -420,7 +428,7 @@ function CoinGameInner() {
                 </p>
               </div>
 
-              <div className="w-full space-y-8">
+              <div className="w-full max-w-sm space-y-8">
                 <SliderRow
                   label="Rows"
                   symbol="n"
@@ -441,7 +449,7 @@ function CoinGameInner() {
 
               {/* Visual preview */}
               <div className="w-full">
-                <p className="text-xs text-zinc-500 uppercase tracking-widest mb-3 text-center">
+                <p className="text-xs text-zinc-400 uppercase tracking-widest mb-3 text-center">
                   Preview
                 </p>
                 <div className="flex items-center justify-center p-4 overflow-hidden mx-auto w-full">

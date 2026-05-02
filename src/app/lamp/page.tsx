@@ -439,7 +439,7 @@ function LampGameInner() {
           >
             <Link 
               href={gauntletMode ? "/gauntlet" : "/"}
-              className="p-3 text-zinc-400 hover:text-zinc-700 transition-all duration-300 flex items-center justify-center"
+              className="p-3 text-zinc-400 hover:text-white transition-all duration-300 flex items-center justify-center"
               onClick={(e) => e.stopPropagation()}
             >
               <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">

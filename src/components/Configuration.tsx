@@ -104,7 +104,7 @@ export default function Configuration({ initialM, initialN, onStart }: Configura
       </div>
 
       {/* ---- Sliders ---- */}
-      <div className="w-full space-y-8">
+      <div className="w-full max-w-sm space-y-8">
         {/* M slider */}
         <SliderRow
           label="Total Bulbs"
@@ -128,7 +128,7 @@ export default function Configuration({ initialM, initialN, onStart }: Configura
 
       {/* ---- Preview Bulbs ---- */}
       <div className="w-full">
-        <p className="text-xs text-zinc-500 uppercase tracking-widest mb-3 text-center">
+        <p className="text-xs text-zinc-400 uppercase tracking-widest mb-3 text-center">
           Preview
         </p>
 
@@ -247,7 +247,7 @@ function SliderRow({ label, symbol, value, min, max, onChange }: SliderRowProps)
       <div className="flex items-baseline justify-between">
         <label className="text-sm font-medium text-zinc-300">
           {label}{" "}
-          <span className="text-zinc-500 font-normal italic">({symbol})</span>
+          <span className="text-zinc-400 font-normal italic">({symbol})</span>
         </label>
         <span className="text-lg font-bold tabular-nums text-amber-500">
           {value}
@@ -282,8 +282,8 @@ function SliderRow({ label, symbol, value, min, max, onChange }: SliderRowProps)
 
       {/* Ticks */}
       <div className="flex justify-between px-0.5">
-        <span className="text-[10px] text-zinc-500">{min}</span>
-        <span className="text-[10px] text-zinc-500">{max}</span>
+        <span className="text-[10px] text-zinc-400">{min}</span>
+        <span className="text-[10px] text-zinc-400">{max}</span>
       </div>
     </div>
   );
