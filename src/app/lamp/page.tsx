@@ -14,7 +14,7 @@ import { useState, useRef, useCallback, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { setStageResult } from "@/src/lib/gauntletStorage";
+import { setParticipantStageResult } from "@/src/lib/gauntletStorage";
 
 import Configuration from "@/src/components/Configuration";
 import GameBoard from "@/src/components/GameBoard";
@@ -59,6 +59,7 @@ function LampGameInner() {
   const gauntletM = searchParams.get("m") ? Number(searchParams.get("m")) : null;
   const gauntletN = searchParams.get("n") ? Number(searchParams.get("n")) : null;
   const gauntletBotFirst = searchParams.get("botFirst") === "true";
+  const gauntletParticipantId = searchParams.get("participantId") ?? "";
 
   /* ---- core game state ---- */
   const [phase, setPhase] = useState<Phase>(gauntletMode ? "loading" : "landing");
@@ -245,15 +246,15 @@ function LampGameInner() {
   /** GameOver → Config (or back to Gauntlet in gauntlet mode) */
   const handlePlayAgain = useCallback(() => {
     playButtonClickSound();
-    if (gauntletMode && gauntletStage !== null && winner) {
-      setStageResult(gauntletStage, winner === "Player" ? "completed_win" : "completed_loss");
+    if (gauntletMode && gauntletStage !== null && gauntletParticipantId && winner) {
+      setParticipantStageResult(gauntletParticipantId, gauntletStage, winner === "Player" ? "completed_win" : "completed_loss");
       router.push("/gauntlet");
       return;
     }
     setPhase("config");
     setWinner(null);
     strategyRef.current = null;
-  }, [gauntletMode, gauntletStage, winner, router]);
+  }, [gauntletMode, gauntletStage, gauntletParticipantId, winner, router]);
 
   /* ---- Gauntlet mode: auto-start the game on mount ---- */
   useEffect(() => {

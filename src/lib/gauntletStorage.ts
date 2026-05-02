@@ -1,53 +1,73 @@
 /**
- * gauntletStorage.ts — Persistence layer for Gauntlet mode.
+ * gauntletStorage.ts — Multi-participant persistence layer for Gauntlet mode.
  *
- * Stores per-stage completion status in localStorage under the key "gauntletProgress".
- * Shape: Record<string, "completed_win" | "completed_loss">
+ * localStorage keys:
+ *   "gauntletDB"                — Record<participantId, GauntletProgress>
+ *   "gauntletActiveParticipant" — currently active participant ID (string)
  */
 
-const STORAGE_KEY = "gauntletProgress";
+const DB_KEY = "gauntletDB";
+const ACTIVE_KEY = "gauntletActiveParticipant";
 
 export type StageResult = "completed_win" | "completed_loss";
 
 export type GauntletProgress = Record<string, StageResult>;
 
-/** Read the full progress object from localStorage. */
-export function getGauntletProgress(): GauntletProgress {
+type GauntletDB = Record<string, GauntletProgress>;
+
+/* ------------------------------------------------------------------ */
+/*  Internal helpers                                                    */
+/* ------------------------------------------------------------------ */
+
+function readDB(): GauntletDB {
   if (typeof window === "undefined") return {};
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as GauntletProgress) : {};
+    const raw = localStorage.getItem(DB_KEY);
+    return raw ? (JSON.parse(raw) as GauntletDB) : {};
   } catch {
     return {};
   }
 }
 
-/** Persist the result of a single stage. */
-export function setStageResult(stage: number, result: StageResult): void {
+function writeDB(db: GauntletDB): void {
   if (typeof window === "undefined") return;
   try {
-    const progress = getGauntletProgress();
-    progress[String(stage)] = result;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    localStorage.setItem(DB_KEY, JSON.stringify(db));
   } catch {
     // silent fail — localStorage may be full or blocked
   }
 }
 
-/** Check whether a given stage has been completed (win or loss). */
-export function isStageCompleted(stage: number): boolean {
-  const progress = getGauntletProgress();
-  return String(stage) in progress;
+/* ------------------------------------------------------------------ */
+/*  Public API                                                          */
+/* ------------------------------------------------------------------ */
+
+/** Get the full progress for a specific participant. */
+export function getParticipantProgress(id: string): GauntletProgress {
+  const db = readDB();
+  return db[id] ?? {};
 }
 
-/** Get the result for a specific stage, or null if not yet played. */
-export function getStageResult(stage: number): StageResult | null {
-  const progress = getGauntletProgress();
-  return progress[String(stage)] ?? null;
+/** Persist a stage result for a specific participant. */
+export function setParticipantStageResult(
+  id: string,
+  stage: number,
+  result: StageResult
+): void {
+  const db = readDB();
+  if (!db[id]) db[id] = {};
+  db[id][String(stage)] = result;
+  writeDB(db);
 }
 
-/** Reset all progress (for dev/debug). */
-export function resetGauntletProgress(): void {
+/** Store the currently active participant ID. */
+export function setActiveParticipant(id: string): void {
   if (typeof window === "undefined") return;
-  localStorage.removeItem(STORAGE_KEY);
+  localStorage.setItem(ACTIVE_KEY, id);
+}
+
+/** Read the currently active participant ID. */
+export function getActiveParticipant(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(ACTIVE_KEY);
 }

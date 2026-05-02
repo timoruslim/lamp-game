@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { setStageResult } from "@/src/lib/gauntletStorage";
+import { setParticipantStageResult } from "@/src/lib/gauntletStorage";
 import {
   playButtonClickSound,
   playWinDetectedSound,
@@ -90,6 +90,7 @@ function CoinGameInner() {
   const gauntletN = searchParams.get("n") ? Number(searchParams.get("n")) : null;
   const gauntletM = searchParams.get("m") ? Number(searchParams.get("m")) : null;
   const gauntletBotFirst = searchParams.get("botFirst") === "true";
+  const gauntletParticipantId = searchParams.get("participantId") ?? "";
 
   const [phase, setPhase] = useState<Phase>(gauntletMode ? "config" : "intro");
   const [n, setN] = useState(gauntletN ?? 10);
@@ -289,8 +290,8 @@ function CoinGameInner() {
 
   const handlePlayAgain = () => {
     playButtonClickSound();
-    if (gauntletMode && gauntletStage !== null && winner) {
-      setStageResult(gauntletStage, winner === "Player" ? "completed_win" : "completed_loss");
+    if (gauntletMode && gauntletStage !== null && gauntletParticipantId && winner) {
+      setParticipantStageResult(gauntletParticipantId, gauntletStage, winner === "Player" ? "completed_win" : "completed_loss");
       router.push("/gauntlet");
       return;
     }
@@ -526,7 +527,7 @@ function CoinGameInner() {
                   <div
                     key={i}
                     onClick={() => handleCellClick(i)}
-                    className="@container flex items-center justify-center transition-all cursor-pointer relative overflow-hidden aspect-square border-[#c4a98a]/60 border-[0.5px] bg-[#f3ead8]"
+                    className="@container flex items-center justify-center transition-all cursor-pointer relative overflow-hidden aspect-square border-[#c4a98a]/60 border-[0.5px] bg-[#f3ead8] hover:bg-[#ebe0cb]"
                   >
                     {/* The Coin */}
                     <AnimatePresence>
