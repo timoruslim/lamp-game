@@ -5,6 +5,11 @@
   --foreground: #18181b;
 }
 
+::selection {
+  background-color: rgba(245, 158, 11, 0.4);
+  color: #fff;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

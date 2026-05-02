@@ -94,11 +94,11 @@ export default function Configuration({ initialM, initialN, onStart }: Configura
       className="flex flex-col items-center justify-center gap-10 w-full max-w-xl mx-auto px-6"
     >
       {/* ---- Title ---- */}
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-800">
+      <div className="text-center space-y-2 drop-shadow-md">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
           Configure Game
         </h1>
-        <p className="text-sm text-zinc-500 max-w-xs mx-auto leading-relaxed">
+        <p className="text-sm text-zinc-300 max-w-xs mx-auto leading-relaxed">
           Choose the number of bulbs and the maximum that may glow at once.
         </p>
       </div>
@@ -128,7 +128,7 @@ export default function Configuration({ initialM, initialN, onStart }: Configura
 
       {/* ---- Preview Bulbs ---- */}
       <div className="w-full">
-        <p className="text-xs text-zinc-400 uppercase tracking-widest mb-3 text-center">
+        <p className="text-xs text-zinc-500 uppercase tracking-widest mb-3 text-center">
           Preview
         </p>
 
@@ -164,17 +164,17 @@ export default function Configuration({ initialM, initialN, onStart }: Configura
           </AnimatePresence>
         </div>
 
-        <p className="text-[11px] text-zinc-400 text-center mt-3">
+        <p className="text-[11px] text-zinc-300 text-center mt-3">
           First{" "}
-          <span className="text-amber-600 font-semibold inline-block w-3.5 text-center">{n}</span>{" "}
+          <span className="text-amber-500 font-semibold inline-block w-3.5 text-center">{n}</span>{" "}
           bulbs highlighted — at most{" "}
-          <span className="text-amber-600 font-semibold inline-block w-3.5 text-center">{n}</span>{" "}
+          <span className="text-amber-500 font-semibold inline-block w-3.5 text-center">{n}</span>{" "}
           may be on simultaneously.
         </p>
       </div>
 
       {/* ---- Player Order Toggle ---- */}
-      <div className="flex bg-zinc-100 border border-zinc-200 rounded-full p-1">
+      <div className="flex bg-white/5 backdrop-blur-md border border-white/10 rounded-full p-1">
         <button
           type="button"
           onClick={() => {
@@ -184,8 +184,8 @@ export default function Configuration({ initialM, initialN, onStart }: Configura
           className={[
             "px-6 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer",
             userIsFirst
-              ? "bg-amber-500/20 text-amber-700"
-              : "text-zinc-400 hover:text-zinc-600",
+              ? "bg-amber-500 text-amber-950"
+              : "text-zinc-400 hover:text-zinc-200",
           ].join(" ")}
         >
           Play First
@@ -199,8 +199,8 @@ export default function Configuration({ initialM, initialN, onStart }: Configura
           className={[
             "px-6 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer",
             !userIsFirst
-              ? "bg-amber-500/20 text-amber-700"
-              : "text-zinc-400 hover:text-zinc-600",
+              ? "bg-amber-500 text-amber-950"
+              : "text-zinc-400 hover:text-zinc-200",
           ].join(" ")}
         >
           Play Second
@@ -245,11 +245,11 @@ function SliderRow({ label, symbol, value, min, max, onChange }: SliderRowProps)
     <div className="space-y-2">
       {/* Header row */}
       <div className="flex items-baseline justify-between">
-        <label className="text-sm font-medium text-zinc-600">
+        <label className="text-sm font-medium text-zinc-300">
           {label}{" "}
-          <span className="text-zinc-400 font-normal italic">({symbol})</span>
+          <span className="text-zinc-500 font-normal italic">({symbol})</span>
         </label>
-        <span className="text-lg font-bold tabular-nums text-amber-600">
+        <span className="text-lg font-bold tabular-nums text-amber-500">
           {value}
         </span>
       </div>
@@ -263,7 +263,7 @@ function SliderRow({ label, symbol, value, min, max, onChange }: SliderRowProps)
         onChange={(e) => onChange(Number(e.target.value))}
         className={[
           "w-full h-1.5 rounded-full appearance-none cursor-pointer",
-          "bg-zinc-200",
+          "bg-white/10",
           /* Webkit thumb */
           "[&::-webkit-slider-thumb]:appearance-none",
           "[&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4",
@@ -282,8 +282,8 @@ function SliderRow({ label, symbol, value, min, max, onChange }: SliderRowProps)
 
       {/* Ticks */}
       <div className="flex justify-between px-0.5">
-        <span className="text-[10px] text-zinc-400">{min}</span>
-        <span className="text-[10px] text-zinc-400">{max}</span>
+        <span className="text-[10px] text-zinc-500">{min}</span>
+        <span className="text-[10px] text-zinc-500">{max}</span>
       </div>
     </div>
   );

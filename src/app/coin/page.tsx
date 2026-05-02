@@ -43,10 +43,10 @@ function SliderRow({ label, symbol, value, min, max, onChange }: { label: string
   return (
     <div className="space-y-2 w-full">
       <div className="flex items-baseline justify-between">
-        <label className="text-sm font-medium text-zinc-600">
-          {label} <span className="text-zinc-400 font-normal italic">({symbol})</span>
+        <label className="text-sm font-medium text-zinc-300">
+          {label} <span className="text-zinc-500 font-normal italic">({symbol})</span>
         </label>
-        <span className="text-lg font-bold tabular-nums text-amber-600">
+        <span className="text-lg font-bold tabular-nums text-amber-500">
           {value}
         </span>
       </div>
@@ -58,7 +58,7 @@ function SliderRow({ label, symbol, value, min, max, onChange }: { label: string
         onChange={(e) => onChange(Number(e.target.value))}
         className={[
           "w-full h-1.5 rounded-full appearance-none cursor-pointer",
-          "bg-zinc-200",
+          "bg-white/10",
           "[&::-webkit-slider-thumb]:appearance-none",
           "[&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4",
           "[&::-webkit-slider-thumb]:rounded-full",
@@ -73,8 +73,8 @@ function SliderRow({ label, symbol, value, min, max, onChange }: { label: string
         ].join(" ")}
       />
       <div className="flex justify-between px-0.5">
-        <span className="text-[10px] text-zinc-400">{min}</span>
-        <span className="text-[10px] text-zinc-400">{max}</span>
+        <span className="text-[10px] text-zinc-500">{min}</span>
+        <span className="text-[10px] text-zinc-500">{max}</span>
       </div>
     </div>
   );
@@ -106,6 +106,7 @@ function CoinGameInner() {
   const workerRef = useRef<Worker | null>(null);
   const applyBotMoveRef = useRef<(move: number) => void>(() => {});
   const gauntletAutoStarted = useRef(false);
+  const surrenderedRef = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -134,8 +135,10 @@ function CoinGameInner() {
 
     let isMounted = true;
     const runEndingSequence = async () => {
-      // 1. Wait a moment like the lamp game
-      await new Promise((r) => setTimeout(r, 900));
+      // 1. Wait a moment like the lamp game (skip if surrendered)
+      if (!surrenderedRef.current) {
+        await new Promise((r) => setTimeout(r, 900));
+      }
       if (!isMounted) return;
 
       // 2. Play win/lose sound
@@ -243,6 +246,7 @@ function CoinGameInner() {
     setPhase("playing");
     setIsPlayerTurn(false);
     setWinner(null);
+    surrenderedRef.current = false;
 
     workerRef.current?.terminate();
     const worker = new Worker(new URL("@/src/workers/coin.worker.ts", import.meta.url));
@@ -299,6 +303,14 @@ function CoinGameInner() {
     setWinner(null);
   };
 
+  const handleSurrender = useCallback(() => {
+    if (phase !== "playing") return;
+    surrenderedRef.current = true;
+    playButtonClickSound();
+    setWinner("Bot");
+    setPhase("ending");
+  }, [phase]);
+
   /* ---- Gauntlet mode: auto-start on mount ---- */
   useEffect(() => {
     if (gauntletMode) {
@@ -334,7 +346,7 @@ function CoinGameInner() {
 
       {/* Return to Arena Button */}
       <AnimatePresence>
-        {(phase === "intro" || phase === "config" || phase === "gameover") && (
+        {(phase === "intro" || phase === "config") && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -429,7 +441,7 @@ function CoinGameInner() {
 
               {/* Visual preview */}
               <div className="w-full">
-                <p className="text-xs text-zinc-400 uppercase tracking-widest mb-3 text-center">
+                <p className="text-xs text-zinc-500 uppercase tracking-widest mb-3 text-center">
                   Preview
                 </p>
                 <div className="flex items-center justify-center p-4 overflow-hidden mx-auto w-full">
@@ -447,7 +459,7 @@ function CoinGameInner() {
               </div>
 
               {/* Player Order Toggle */}
-              <div className="flex bg-zinc-100 border border-zinc-200 rounded-full p-1">
+              <div className="flex bg-white/5 backdrop-blur-md border border-white/10 rounded-full p-1">
                 <button
                   type="button"
                   onClick={() => {
@@ -457,8 +469,8 @@ function CoinGameInner() {
                   className={[
                     "px-6 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer",
                     userIsFirst
-                      ? "bg-amber-500/20 text-amber-700"
-                      : "text-zinc-400 hover:text-zinc-600",
+                      ? "bg-amber-500 text-amber-950"
+                      : "text-zinc-400 hover:text-zinc-200",
                   ].join(" ")}
                 >
                   Play First
@@ -472,8 +484,8 @@ function CoinGameInner() {
                   className={[
                     "px-6 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer",
                     !userIsFirst
-                      ? "bg-amber-500/20 text-amber-700"
-                      : "text-zinc-400 hover:text-zinc-600",
+                      ? "bg-amber-500 text-amber-950"
+                      : "text-zinc-400 hover:text-zinc-200",
                   ].join(" ")}
                 >
                   Play Second
@@ -522,7 +534,7 @@ function CoinGameInner() {
                   display: "grid", 
                   gridTemplateColumns: `repeat(${m}, minmax(0, 1fr))`, 
                   gap: "0px",
-                  width: `calc(min(95vw, ${(m / n) * 80}vh, ${m * 4.5 + 0.75}rem))`
+                  width: `calc(min(95vw, ${(m / n) * 72}vh, ${m * 4.5 + 0.75}rem))`
                 }}
               >
                 {board.map((cellState, i) => {
@@ -557,9 +569,24 @@ function CoinGameInner() {
               </div>
 
               {/* Subtle hint */}
-              <p className="text-[11px] text-zinc-400 max-w-xs text-center mt-2">
-                Place a coin. Coins cannot be horizontally or vertically adjacent. The last player to move wins.
-              </p>
+              <div className="flex flex-col items-center gap-4">
+                <p className="text-[11px] text-zinc-300 max-w-xs text-center mt-2">
+                  Place a coin. Coins cannot be horizontally or vertically adjacent. The last player to move wins.
+                </p>
+
+                <button
+                  disabled={phase !== "playing"}
+                  onClick={handleSurrender}
+                  className={[
+                    "px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all",
+                    phase === "playing"
+                      ? "border border-red-500/30 text-red-400/80 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-400 cursor-pointer"
+                      : "border border-zinc-700/30 text-zinc-600/50 cursor-not-allowed opacity-50",
+                  ].join(" ")}
+                >
+                  Surrender
+                </button>
+              </div>
             </motion.div>
           )}
 
@@ -606,7 +633,7 @@ function CoinGameInner() {
                 >
                   {winner === "Player" ? "You Win!" : "Game Over"}
                 </h2>
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-zinc-300">
                   {winner === "Player"
                     ? "The bot was completely trapped. Brilliant play!"
                     : "No playable squares left for you. The bot wins."}

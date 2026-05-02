@@ -85,6 +85,7 @@ function LampGameInner() {
   const applyBotMoveRef = useRef<(move: number) => void>(() => {});
   const lastMoveIdx = useRef<number | null>(null);
   const gauntletAutoStarted = useRef(false);
+  const surrenderedRef = useRef(false);
 
   /* ---- cleanup worker on unmount ---- */
   useEffect(() => {
@@ -103,8 +104,10 @@ function LampGameInner() {
     let isMounted = true;
 
     const runEndingSequence = async () => {
-      // 1. Wait a bit after the final move (longer suspense)
-      await new Promise((r) => setTimeout(r, 900));
+      // 1. Wait a bit after the final move (skip if surrendered)
+      if (!surrenderedRef.current) {
+        await new Promise((r) => setTimeout(r, 900));
+      }
       if (!isMounted) return;
 
       // 2. Horror movie flicker on the last moved bulb
@@ -186,6 +189,7 @@ function LampGameInner() {
       setM(newM);
       setN(newN);
       setPhase("loading");
+      surrenderedRef.current = false;
 
       /* Terminate any previous worker. */
       workerRef.current?.terminate();
@@ -255,6 +259,13 @@ function LampGameInner() {
     setWinner(null);
     strategyRef.current = null;
   }, [gauntletMode, gauntletStage, gauntletParticipantId, winner, router]);
+
+  const handleSurrender = useCallback(() => {
+    if (phase !== "playing") return;
+    surrenderedRef.current = true;
+    playButtonClickSound();
+    triggerGameEnd("Bot");
+  }, [phase, triggerGameEnd]);
 
   /* ---- Gauntlet mode: auto-start the game on mount ---- */
   useEffect(() => {
@@ -419,7 +430,7 @@ function LampGameInner() {
 
       {/* ---- Return to Arena Button ---- */}
       <AnimatePresence>
-        {(phase === "landing" || phase === "config" || phase === "gameover") && (
+        {(phase === "landing" || phase === "config") && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -557,10 +568,25 @@ function LampGameInner() {
               />
 
               {/* Subtle hint */}
-              <p className="text-[10px] text-zinc-400 max-w-xs text-center">
-                Toggle a bulb. No state may repeat; at most {n} bulb
-                {n !== 1 ? "s" : ""} may glow at once.
-              </p>
+              <div className="flex flex-col items-center gap-4">
+                <p className="text-[10px] text-zinc-300 max-w-xs text-center">
+                  Toggle a bulb. No state may repeat; at most {n} bulb
+                  {n !== 1 ? "s" : ""} may glow at once.
+                </p>
+
+                <button
+                  disabled={phase !== "playing"}
+                  onClick={handleSurrender}
+                  className={[
+                    "px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all",
+                    phase === "playing"
+                      ? "border border-red-500/30 text-red-400/80 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-400 cursor-pointer"
+                      : "border border-zinc-700/30 text-zinc-600/50 cursor-not-allowed opacity-50",
+                  ].join(" ")}
+                >
+                  Surrender
+                </button>
+              </div>
             </motion.div>
           )}
 
@@ -610,7 +636,7 @@ function LampGameInner() {
                 >
                   {winner === "Player" ? "You Win!" : "Game Over"}
                 </h2>
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-zinc-300">
                   {winner === "Player"
                     ? "The bot ran out of valid moves. Brilliant play!"
                     : "No valid moves left for you. The bot played perfectly."}
