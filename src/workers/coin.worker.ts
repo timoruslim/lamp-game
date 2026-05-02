@@ -21,7 +21,16 @@ let gameN = 0;
 let gameM = 0;
 let botIsFirst = false;
 let useMirror = false;
-let mirrorFirstMove = true; // true if bot hasn't moved yet (for "both odd, bot first" case)
+let mirrorFirstMove = true;
+
+/**
+ * Mirror-steal state for odd×odd when bot is second.
+ * If the human doesn't play center on move 1, the bot plays center
+ * and then mirrors — including mirroring that first non-center move.
+ */
+let canStealMirror = false;      // true when odd×odd and bot is second
+let stealActivated = false;      // true once bot played center to steal
+let pendingStealMirror = -1;     // the human's first move that still needs mirroring
 
 function mirrorIndex(idx: number, n: number, m: number): number {
   const r = Math.floor(idx / m);
@@ -67,12 +76,33 @@ self.onmessage = (e: MessageEvent) => {
     mirrorFirstMove = true;
 
     const bothOdd = n % 2 === 1 && m % 2 === 1;
-    const bothEven = n % 2 === 0 && m % 2 === 0;
+
+    // ──────────────────────────────────────────────────────────────────
+    //  Game theory of Node Kayles on n×m with 180° rotational mirror:
+    //
+    //  • Both dimensions odd → center cell exists → P1 plays center,
+    //    then mirrors every P2 move → P1 always wins.
+    //
+    //  • At least one dimension even → no center cell → every cell has
+    //    a distinct mirror partner → P2 mirrors every P1 move → P2
+    //    always wins.
+    //
+    //  • Even×even (or mixed) with bot as P1 → bot CANNOT win by
+    //    mirroring. Its first move has no mirror partner, which creates
+    //    an asymmetry that gives the human more available cells. The
+    //    solver/heuristic will exploit human mistakes instead.
+    // ──────────────────────────────────────────────────────────────────
 
     // Bot wins with mirror when:
     // - Both odd AND bot is Player 1 (center + mirror)
-    // - Both even AND bot is Player 2 (mirror)
-    useMirror = (bothOdd && botFirst) || (bothEven && !botFirst);
+    // - NOT both odd AND bot is Player 2 (pure mirror — works for
+    //   even×even, odd×even, and even×odd grids)
+    useMirror = (bothOdd && botFirst) || (!bothOdd && !botFirst);
+
+    // Bot is second on an odd×odd board: can steal mirror if human skips center
+    canStealMirror = bothOdd && !botFirst;
+    stealActivated = false;
+    pendingStealMirror = -1;
 
     wasmModule.ccall("init_game", null, ["number", "number"], [n, m]);
     postMessage({ type: "INIT_DONE" });
@@ -85,7 +115,49 @@ self.onmessage = (e: MessageEvent) => {
       return;
     }
 
-    // ---- Mirror strategy (guaranteed win, O(1)) ----
+    // ---- Mirror-steal: odd×odd, bot is second ----
+    // If human's first move is NOT center, bot plays center and adopts mirror.
+    if (canStealMirror && !stealActivated) {
+      const center = centerIndex(n, m);
+      if (lastHumanMove !== center) {
+        // Human blundered! Bot steals center.
+        stealActivated = true;
+        pendingStealMirror = lastHumanMove; // remember — we owe a mirror of this move
+        if (stateMask & (1n << BigInt(center))) {
+          postMessage({ type: "BEST_MOVE_RESULT", move: center });
+          return;
+        }
+        // Center unexpectedly blocked — fall through to solver
+        stealActivated = false;
+        canStealMirror = false;
+      } else {
+        // Human played center — no steal opportunity, use solver
+        canStealMirror = false;
+      }
+    }
+
+    // ---- Ongoing stolen mirror: mirror the pending first move or the latest move ----
+    if (stealActivated) {
+      let move: number;
+
+      if (pendingStealMirror >= 0) {
+        // We still owe a mirror of the human's first non-center move
+        move = mirrorIndex(pendingStealMirror, n, m);
+        pendingStealMirror = -1;
+      } else {
+        // Normal mirror of the last human move
+        move = mirrorIndex(lastHumanMove, n, m);
+      }
+
+      if (stateMask & (1n << BigInt(move))) {
+        postMessage({ type: "BEST_MOVE_RESULT", move });
+        return;
+      }
+      // Mirror cell blocked — symmetry broken, fall through to solver
+      stealActivated = false;
+    }
+
+    // ---- Standard mirror strategy (guaranteed win, O(1)) ----
     if (useMirror) {
       let move: number;
 
