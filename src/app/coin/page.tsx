@@ -521,7 +521,7 @@ function CoinGameInner() {
             >
               <div className="text-center space-y-1 drop-shadow-md">
                 <p className="text-xs uppercase tracking-widest text-zinc-200">
-                  {phase === "ending" ? "Game Over" : isPlayerTurn ? "Your Turn" : "Bot is thinking…"}
+                  {phase === "ending" ? "Game Over" : isPlayerTurn ? "Your Turn" : "Timo is thinking…"}
                 </p>
                 <p className="text-[11px] text-zinc-300 tabular-nums">
                   Coins placed: {board.filter((c) => c === 1).length}
@@ -635,8 +635,8 @@ function CoinGameInner() {
                 </h2>
                 <p className="text-sm text-zinc-300">
                   {winner === "Player"
-                    ? "The bot was completely trapped. Brilliant play!"
-                    : "No playable squares left for you. The bot wins."}
+                    ? "Timo was completely trapped. Brilliant play!"
+                    : "No playable squares left for you. Timo wins."}
                 </p>
               </div>
 
@@ -646,7 +646,7 @@ function CoinGameInner() {
                 whileTap={{ scale: 0.96 }}
                 className="px-8 py-3 rounded-full text-sm font-semibold tracking-wide cursor-pointer bg-white text-zinc-700 border border-zinc-200 shadow-sm hover:bg-zinc-50 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
               >
-                {gauntletMode ? "Back to Gauntlet" : "Play Again"}
+                {gauntletMode ? "Back to Home" : "Play Again"}
               </motion.button>
             </motion.div>
           )}

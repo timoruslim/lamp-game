@@ -15,7 +15,7 @@ const games = [
     id: "coin",
     title: "Coin Game",
     path: "/coin",
-    description: "Drop coins, block neighbors, and starve the bot of valid moves.",
+    description: "Drop coins, block neighbors, and starve Timo of valid moves.",
     icon: (
       <div
         className="w-[75%] h-[75%] rounded-full border-2 border-amber-300 flex items-center justify-center z-10"

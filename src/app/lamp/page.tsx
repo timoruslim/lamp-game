@@ -550,7 +550,7 @@ function LampGameInner() {
                     ? "Game Over"
                     : isPlayerTurn
                     ? "Your Turn"
-                    : "Bot is thinking…"}
+                    : "Timo is thinking…"}
                 </p>
                 <p className="text-[11px] text-zinc-200 tabular-nums">
                   Moves played: {visitedRef.current.size - 1} ·{" "}
@@ -638,8 +638,8 @@ function LampGameInner() {
                 </h2>
                 <p className="text-sm text-zinc-300">
                   {winner === "Player"
-                    ? "The bot ran out of valid moves. Brilliant play!"
-                    : "No valid moves left for you. The bot played perfectly."}
+                    ? "Timo ran out of valid moves. Brilliant play!"
+                    : "No valid moves left for you. Timo played perfectly."}
                 </p>
               </div>
 
@@ -655,7 +655,7 @@ function LampGameInner() {
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
                 ].join(" ")}
               >
-                {gauntletMode ? "Back to Gauntlet" : "Play Again"}
+                {gauntletMode ? "Back to Home" : "Play Again"}
               </motion.button>
             </motion.div>
           )}

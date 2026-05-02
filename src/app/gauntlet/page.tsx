@@ -37,11 +37,11 @@ interface StageConfig {
 }
 
 const stages: StageConfig[] = [
-  { id: 1, title: "Stage 1", subtitle: "The first spark dictates the future. Find the golden loop, strike first, and never stray from the path.", gameType: "lamp", params: { m: 4, n: 4 }, rules: "Toggle 1 of 4 bulbs per turn. No state may repeat; at most 4 bulbs may glow at once." },
-  { id: 2, title: "Stage 2", subtitle: "An unbalanced circuit where the shadows favor the patient. Sometimes, it is wiser to follow than to lead.", gameType: "lamp", params: { m: 6, n: 3 }, rules: "Toggle 1 of 6 bulbs per turn. No state may repeat; at most 3 bulbs may glow at once." },
-  { id: 3, title: "Stage 3", subtitle: "The cage expands. A wider web grants more room to breathe, but gives you much more rope to hang yourself with.", gameType: "lamp", params: { m: 6, n: 4 }, rules: "Toggle 1 of 6 bulbs per turn. No state may repeat; at most 4 bulbs may glow at once." },
-  { id: 4, title: "Stage 4", subtitle: "A perfectly symmetric battlefield. The aggressor is mathematically doomed; the mimic shall inherit the board.", gameType: "coin", params: { m: 10, n: 10 }, rules: "Place a coin on a 10×10 grid. Coins cannot be horizontally or vertically adjacent. The last player to move wins." },
-  { id: 5, title: "Stage 5", subtitle: "An odd realm with a true heart. Claim the absolute center on your first breath, and let the mirror seal their fate.", gameType: "coin", params: { m: 9, n: 11 }, rules: "Place a coin on a 11×9 grid. Coins cannot be horizontally or vertically adjacent. The last player to move wins." },
+  { id: 1, title: "Stage 1", subtitle: "Toggle 1 of 4 bulbs per turn. No state may repeat; at most 4 bulbs may glow at once.", gameType: "lamp", params: { m: 4, n: 4 }, rules: "" },
+  { id: 2, title: "Stage 2", subtitle: "Toggle 1 of 6 bulbs per turn. No state may repeat; at most 3 bulbs may glow at once.", gameType: "lamp", params: { m: 6, n: 3 }, rules: "" },
+  { id: 3, title: "Stage 3", subtitle: "Toggle 1 of 6 bulbs per turn. No state may repeat; at most 4 bulbs may glow at once.", gameType: "lamp", params: { m: 6, n: 4 }, rules: "" },
+  { id: 4, title: "Stage 4", subtitle: "Place a coin on a 10×10 grid. Coins cannot be horizontally or vertically adjacent. The last player to move wins.", gameType: "coin", params: { m: 10, n: 10 }, rules: "" },
+  { id: 5, title: "Stage 5", subtitle: "Place a coin on a 11×9 grid. Coins cannot be horizontally or vertically adjacent. The last player to move wins.", gameType: "coin", params: { m: 9, n: 11 }, rules: "" },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -190,7 +190,7 @@ export default function GauntletHub() {
               className="bg-white rounded-2xl shadow-xl border border-zinc-200 p-8 w-full max-w-sm mx-4"
             >
               <h2 className="text-xl font-bold text-zinc-800 text-center mb-1">
-                Enter Gauntlet
+                Enter Game
               </h2>
               <p className="text-xs text-zinc-400 text-center mb-6">
                 Please provide your participant ID and the event password.
@@ -264,7 +264,7 @@ export default function GauntletHub() {
                 onClick={handleModalSubmit}
                 className="w-full mt-6 px-4 py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-sm cursor-pointer hover:shadow-amber-500/30 transition-shadow"
               >
-                Access Arena
+                Access Game
               </motion.button>
             </motion.div>
           </motion.div>
@@ -431,9 +431,6 @@ export default function GauntletHub() {
                               Play Second
                             </motion.button>
                           </div>
-                          <p className="text-[11px] text-zinc-300 leading-relaxed">
-                            {stage.rules}
-                          </p>
                         </div>
                       </motion.div>
                     )}
