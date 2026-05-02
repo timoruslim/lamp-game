@@ -157,7 +157,7 @@ export default function GauntletHub() {
   const winCount = Object.values(progress).filter((r) => r === "completed_win").length;
 
   return (
-    <div className="relative flex flex-col items-center min-h-screen bg-slate-50 overflow-hidden text-zinc-800">
+    <div className="relative flex flex-col items-center justify-center min-h-screen bg-slate-50 overflow-hidden text-zinc-800 py-10">
       {/* Ambient background glow */}
       <div
         className="pointer-events-none fixed inset-0 z-0 scale-105"
@@ -278,13 +278,13 @@ export default function GauntletHub() {
         initial={{ opacity: 0, y: -30 }}
         animate={phase === "ready" ? { opacity: 1, y: 0 } : { opacity: 0.3, y: -30 }}
         transition={{ duration: 0.6, delay: 0.1 }}
-        className="z-10 text-center pt-20 pb-10 px-4"
+        className="z-10 text-center pb-8 px-4"
       >
         <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-amber-500">
-          ITBMO Gauntlet
+          POS KOMBINATORIKA – ITBMO 2026
         </h1>
-        <p className="text-sm text-zinc-200 mt-3 max-w-md mx-auto drop-shadow-md">
-          Win or lose, you only get one shot at each.
+        <p className="text-sm text-zinc-200 mt-5 max-w-md mx-auto drop-shadow-md">
+          Menang atau kalah, Anda hanya memiliki satu kesempatan. 
         </p>
         {phase === "ready" && participantId && (
           <motion.p
@@ -305,7 +305,7 @@ export default function GauntletHub() {
       {/* ============================================================ */}
       {/*  STAGE LIST                                                    */}
       {/* ============================================================ */}
-      <div className="z-10 flex flex-col gap-4 w-full max-w-lg px-4 pb-20">
+      <div className="z-10 flex flex-col gap-4 w-full max-w-lg px-4">
         {stages.map((stage, i) => {
           const result = progress[String(stage.id)] as StageResult | undefined;
           const isCompleted = !!result;
@@ -404,7 +404,7 @@ export default function GauntletHub() {
                         transition={{ duration: 0.25 }}
                         className="overflow-hidden"
                       >
-                        <div className="pt-4 pb-1 px-1 flex flex-col gap-3">
+                        <div className="pt-3 pb-1 px-1 flex flex-col gap-3">
                           <div className="flex items-center gap-3">
                             <motion.button
                               type="button"
