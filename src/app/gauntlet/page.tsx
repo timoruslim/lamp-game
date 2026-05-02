@@ -280,7 +280,7 @@ export default function GauntletHub() {
         transition={{ duration: 0.6, delay: 0.1 }}
         className="z-10 text-center pb-8 px-4"
       >
-        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-amber-500">
+        <h1 className="text-4xl sm:text-5xl drop-shadow-md font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#c23d11] to-[#f6d063]">
           POS KOMBINATORIKA – ITBMO 2026
         </h1>
         <p className="text-sm text-zinc-200 mt-5 max-w-md mx-auto drop-shadow-md">
