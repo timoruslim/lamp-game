@@ -10,9 +10,11 @@
  * into a single game loop.
  */
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
+import { setStageResult } from "@/src/lib/gauntletStorage";
 
 import Configuration from "@/src/components/Configuration";
 import GameBoard from "@/src/components/GameBoard";
@@ -47,11 +49,21 @@ const BOT_DELAY_MS = 450;
 /*  Component                                                         */
 /* ------------------------------------------------------------------ */
 
-export default function Home() {
+function LampGameInner() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  /* ---- Gauntlet mode detection ---- */
+  const gauntletMode = searchParams.get("gauntletMode") === "true";
+  const gauntletStage = searchParams.get("gauntletStage") ? Number(searchParams.get("gauntletStage")) : null;
+  const gauntletM = searchParams.get("m") ? Number(searchParams.get("m")) : null;
+  const gauntletN = searchParams.get("n") ? Number(searchParams.get("n")) : null;
+  const gauntletBotFirst = searchParams.get("botFirst") === "true";
+
   /* ---- core game state ---- */
-  const [phase, setPhase] = useState<Phase>("landing");
-  const [m, setM] = useState(7);
-  const [n, setN] = useState(3);
+  const [phase, setPhase] = useState<Phase>(gauntletMode ? "loading" : "landing");
+  const [m, setM] = useState(gauntletM ?? 7);
+  const [n, setN] = useState(gauntletN ?? 3);
   const [currentBoard, setCurrentBoard] = useState(0);
   const [winner, setWinner] = useState<Winner | null>(null);
 
@@ -71,6 +83,7 @@ export default function Home() {
   const boardRef = useRef(0); // mirrors currentBoard for use inside timeouts
   const applyBotMoveRef = useRef<(move: number) => void>(() => {});
   const lastMoveIdx = useRef<number | null>(null);
+  const gauntletAutoStarted = useRef(false);
 
   /* ---- cleanup worker on unmount ---- */
   useEffect(() => {
@@ -229,13 +242,25 @@ export default function Home() {
     []
   );
 
-  /** GameOver → Config */
+  /** GameOver → Config (or back to Gauntlet in gauntlet mode) */
   const handlePlayAgain = useCallback(() => {
     playButtonClickSound();
+    if (gauntletMode && gauntletStage !== null && winner) {
+      setStageResult(gauntletStage, winner === "Player" ? "completed_win" : "completed_loss");
+      router.push("/gauntlet");
+      return;
+    }
     setPhase("config");
     setWinner(null);
     strategyRef.current = null;
-  }, []);
+  }, [gauntletMode, gauntletStage, winner, router]);
+
+  /* ---- Gauntlet mode: auto-start the game on mount ---- */
+  useEffect(() => {
+    if (gauntletMode && gauntletM !== null && gauntletN !== null) {
+      handleStart(gauntletM, gauntletN, !gauntletBotFirst);
+    }
+  }, [gauntletMode, gauntletM, gauntletN, gauntletBotFirst, handleStart]);
 
   /* ================================================================ */
   /*  Error flash helper                                               */
@@ -399,7 +424,7 @@ export default function Home() {
             className="fixed top-6 left-6 z-[60]"
           >
             <Link 
-              href="/"
+              href={gauntletMode ? "/gauntlet" : "/"}
               className="p-3 text-zinc-400 hover:text-zinc-700 transition-all duration-300 flex items-center justify-center"
               onClick={(e) => e.stopPropagation()}
             >
@@ -601,12 +626,20 @@ export default function Home() {
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
                 ].join(" ")}
               >
-                Play Again
+                {gauntletMode ? "Back to Gauntlet" : "Play Again"}
               </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
       </main>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-50" />}>
+      <LampGameInner />
+    </Suspense>
   );
 }

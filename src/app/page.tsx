@@ -29,6 +29,13 @@ const games = [
         </div>
       </div>
     )
+  },
+  {
+    id: "gauntlet",
+    title: "Gauntlet",
+    path: "/gauntlet",
+    description: "Five flawless algorithms. Five one-shot battles. Prove your mastery against the machine.",
+    icon: <span className="text-5xl">⚔️</span>
   }
 ];
 
@@ -63,7 +70,7 @@ export default function ArenaHub() {
         </p>
       </motion.div>
 
-      <div className="z-10 grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
+      <div className="z-10 grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl">
         {games.map((game, i) => (
           <Link href={game.path} key={game.id} className="block group focus:outline-none">
             <motion.div

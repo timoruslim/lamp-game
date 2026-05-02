@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
+import { setStageResult } from "@/src/lib/gauntletStorage";
 import {
   playButtonClickSound,
   playWinDetectedSound,
@@ -78,11 +80,21 @@ function SliderRow({ label, symbol, value, min, max, onChange }: { label: string
   );
 }
 
-export default function CoinGame() {
-  const [phase, setPhase] = useState<Phase>("intro");
-  const [n, setN] = useState(10);
-  const [m, setM] = useState(10);
-  const [userIsFirst, setUserIsFirst] = useState(true);
+function CoinGameInner() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  /* ---- Gauntlet mode detection ---- */
+  const gauntletMode = searchParams.get("gauntletMode") === "true";
+  const gauntletStage = searchParams.get("gauntletStage") ? Number(searchParams.get("gauntletStage")) : null;
+  const gauntletN = searchParams.get("n") ? Number(searchParams.get("n")) : null;
+  const gauntletM = searchParams.get("m") ? Number(searchParams.get("m")) : null;
+  const gauntletBotFirst = searchParams.get("botFirst") === "true";
+
+  const [phase, setPhase] = useState<Phase>(gauntletMode ? "config" : "intro");
+  const [n, setN] = useState(gauntletN ?? 10);
+  const [m, setM] = useState(gauntletM ?? 10);
+  const [userIsFirst, setUserIsFirst] = useState(gauntletMode ? !gauntletBotFirst : true);
 
   const [board, setBoard] = useState<CellState[]>([]);
   const boardRef = useRef<CellState[]>([]);
@@ -92,6 +104,7 @@ export default function CoinGame() {
 
   const workerRef = useRef<Worker | null>(null);
   const applyBotMoveRef = useRef<(move: number) => void>(() => {});
+  const gauntletAutoStarted = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -276,9 +289,21 @@ export default function CoinGame() {
 
   const handlePlayAgain = () => {
     playButtonClickSound();
+    if (gauntletMode && gauntletStage !== null && winner) {
+      setStageResult(gauntletStage, winner === "Player" ? "completed_win" : "completed_loss");
+      router.push("/gauntlet");
+      return;
+    }
     setPhase("config");
     setWinner(null);
   };
+
+  /* ---- Gauntlet mode: auto-start on mount ---- */
+  useEffect(() => {
+    if (gauntletMode) {
+      handleStart();
+    }
+  }, [gauntletMode]);
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-slate-50 overflow-hidden text-zinc-800">
@@ -313,7 +338,7 @@ export default function CoinGame() {
             className="fixed top-6 left-6 z-[60]"
           >
             <Link
-              href="/"
+              href={gauntletMode ? "/gauntlet" : "/"}
               className="p-3 text-zinc-400 hover:text-zinc-700 transition-all duration-300 flex items-center justify-center"
               onClick={(e) => e.stopPropagation()}
             >
@@ -403,8 +428,8 @@ export default function CoinGame() {
                 <p className="text-xs text-zinc-400 uppercase tracking-widest mb-3 text-center">
                   Preview
                 </p>
-                <div className="flex items-center justify-center p-4 overflow-hidden max-h-[500px] mx-auto w-full">
-                  <div className="rounded-sm border-[2px] border-[#c4a98a] shadow-md overflow-hidden" style={{ display: "grid", gridTemplateColumns: `repeat(${m}, minmax(0, 1fr))`, gap: "0px", maxWidth: "14rem", width: "100%" }}>
+                <div className="flex items-center justify-center p-4 overflow-hidden mx-auto w-full">
+                  <div className="rounded-sm border-[2px] border-[#c4a98a] shadow-md overflow-hidden" style={{ display: "grid", gridTemplateColumns: `repeat(${m}, 1fr)`, gap: "0px", width: `${(m / Math.max(n, m)) * 14}rem`, maxWidth: "14rem" }}>
                     {Array.from({ length: n * m }).map((_, i) => {
                       return (
                         <div
@@ -590,12 +615,20 @@ export default function CoinGame() {
                 whileTap={{ scale: 0.96 }}
                 className="px-8 py-3 rounded-full text-sm font-semibold tracking-wide cursor-pointer bg-white text-zinc-700 border border-zinc-200 shadow-sm hover:bg-zinc-50 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
               >
-                Play Again
+                {gauntletMode ? "Back to Gauntlet" : "Play Again"}
               </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
       </main>
     </div>
+  );
+}
+
+export default function CoinGame() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-50" />}>
+      <CoinGameInner />
+    </Suspense>
   );
 }
