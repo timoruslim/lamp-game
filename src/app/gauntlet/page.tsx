@@ -40,7 +40,7 @@ const stages: StageConfig[] = [
   { id: 2, title: "Stage 2: Lamp Game (6, 3)", subtitle: "Toggle 1 of 6 bulbs per turn. No state may repeat. At most 3 bulbs may glow at once.", gameType: "lamp", params: { m: 6, n: 3 } },
   { id: 3, title: "Stage 3: Lamp Game (6, 4)", subtitle: "Toggle 1 of 6 bulbs per turn. No state may repeat. At most 4 bulbs may glow at once.", gameType: "lamp", params: { m: 6, n: 4 } },
   { id: 4, title: "Stage 4: Coin Game (10, 10)", subtitle: "Place a coin on a 10×10 grid. Coins cannot be horizontally or vertically adjacent. The last player to move wins.", gameType: "coin", params: { m: 10, n: 10 } },
-  { id: 5, title: "Stage 5: Coin Game (9, 11)", subtitle: "Place a coin on a 9×11 grid. Coins cannot be horizontally or vertically adjacent. The last player to move wins.", gameType: "coin", params: { m: 9, n: 11 } },
+  { id: 5, title: "Stage 5: Coin Game (9, 11)", subtitle: "Place a coin on a 9×11 grid. Coins cannot be horizontally or vertically adjacent. The last player to move wins.", gameType: "coin", params: { m: 11, n: 9 } },
 ];
 
 /* ------------------------------------------------------------------ */
