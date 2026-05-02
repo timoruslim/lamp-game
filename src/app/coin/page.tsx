@@ -335,7 +335,7 @@ function CoinGameInner() {
           backgroundImage: "url('/bg.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          filter: "blur(4px)",
+          filter: "blur(5px)",
         }}
       />
 

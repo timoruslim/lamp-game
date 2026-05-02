@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ITBMO Arena",
+  title: "ITBMO Games",
   description:
     "Play tactical board games online. Strategy meets AI in a battle of wits.",
   icons: {
