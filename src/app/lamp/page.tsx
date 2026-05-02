@@ -377,13 +377,15 @@ function LampGameInner() {
   /* ================================================================ */
 
   return (
-    <div className="relative flex flex-1 flex-col items-center justify-center min-h-screen bg-slate-50 overflow-hidden">
+    <div className="relative flex flex-1 flex-col items-center justify-center min-h-screen overflow-hidden text-zinc-100">
       {/* ---- Ambient background glow ---- */}
       <div
-        className="pointer-events-none fixed inset-0 z-0"
+        className="pointer-events-none fixed inset-0 z-0 scale-105"
         style={{
-          background:
-            "radial-gradient(ellipse 60% 40% at 50% 0%, rgba(245,158,11,0.06) 0%, transparent 70%)",
+          backgroundImage: "url('/bg.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "blur(4px)",
         }}
       />
 
@@ -469,11 +471,11 @@ function LampGameInner() {
                   <img src="/icons/lamp_on.png" alt="Lamp" className="w-full h-full object-contain pb-1" />
                 </motion.div>
 
-                <div className="text-center space-y-2">
-                  <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-800">
+                <div className="text-center space-y-2 drop-shadow-md">
+                  <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-white">
                     Lamp Game
                   </h1>
-                  <p className="text-sm text-zinc-400 group-hover:text-zinc-600 transition-colors mt-5">
+                  <p className="text-sm text-zinc-300 group-hover:text-white transition-colors mt-5">
                     Tap or press Enter to Play
                   </p>
                 </div>
@@ -509,11 +511,11 @@ function LampGameInner() {
                 transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
                 className="w-10 h-10 rounded-full border-2 border-zinc-300 border-t-amber-500"
               />
-              <div className="text-center space-y-1">
-                <p className="text-sm font-medium text-zinc-600">
+              <div className="text-center space-y-1 drop-shadow-md">
+                <p className="text-sm font-medium text-white">
                   Computing Game Graph…
                 </p>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-zinc-300">
                   Building {(1 << m).toLocaleString()} states via Hopcroft-Karp
                 </p>
               </div>
@@ -531,15 +533,15 @@ function LampGameInner() {
               className="flex flex-col items-center gap-8"
             >
               {/* Status bar */}
-              <div className="text-center space-y-1">
-                <p className="text-xs uppercase tracking-widest text-zinc-500">
+              <div className="text-center space-y-1 drop-shadow-md">
+                <p className="text-xs uppercase tracking-widest text-zinc-300">
                   {phase === "ending"
                     ? "Game Over"
                     : isPlayerTurn
                     ? "Your Turn"
                     : "Bot is thinking…"}
                 </p>
-                <p className="text-[11px] text-zinc-400 tabular-nums">
+                <p className="text-[11px] text-zinc-200 tabular-nums">
                   Moves played: {visitedRef.current.size - 1} ·{" "}
                   Bulbs ON: {countSetBits(currentBoard)}/{n}
                 </p>
@@ -639,7 +641,7 @@ function LampGameInner() {
 
 export default function Home() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-50" />}>
+    <Suspense fallback={<div className="min-h-screen bg-transparent" />}>
       <LampGameInner />
     </Suspense>
   );

@@ -76,6 +76,8 @@ export default function GauntletHub() {
   const [participantId, setParticipantId] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [inputError, setInputError] = useState(false);
+  const [passwordValue, setPasswordValue] = useState("");
+  const [passwordError, setPasswordError] = useState(false);
   const [progress, setProgress] = useState<GauntletProgress>({});
   const [expandedStage, setExpandedStage] = useState<number | null>(null);
   const [introAnimDone, setIntroAnimDone] = useState(false);
@@ -101,21 +103,26 @@ export default function GauntletHub() {
 
   /* ---- Modal submit ---- */
   const handleModalSubmit = useCallback(() => {
-    const trimmed = inputValue.trim();
-    if (!trimmed) {
+    const trimmedId = inputValue.trim();
+    if (!trimmedId) {
       setInputError(true);
       inputRef.current?.focus();
       return;
     }
+    if (passwordValue !== "LAWANTIMO123") {
+      setPasswordError(true);
+      return;
+    }
+    
     playButtonClickSound();
-    setParticipantId(trimmed);
-    setActiveParticipant(trimmed);
-    setProgress(getParticipantProgress(trimmed));
+    setParticipantId(trimmedId);
+    setActiveParticipant(trimmedId);
+    setProgress(getParticipantProgress(trimmedId));
     setPhase("ready");
 
     /* Mark intro animation done after stagger completes */
     setTimeout(() => setIntroAnimDone(true), 800 + stages.length * 100);
-  }, [inputValue]);
+  }, [inputValue, passwordValue]);
 
   /* ---- Stage interactions ---- */
   const handleStageClick = useCallback(
@@ -153,15 +160,17 @@ export default function GauntletHub() {
     <div className="relative flex flex-col items-center min-h-screen bg-slate-50 overflow-hidden text-zinc-800">
       {/* Ambient background glow */}
       <div
-        className="pointer-events-none fixed inset-0 z-0"
+        className="pointer-events-none fixed inset-0 z-0 scale-105"
         style={{
-          background:
-            "radial-gradient(ellipse 60% 40% at 50% 0%, rgba(220,38,38,0.04) 0%, transparent 70%)",
+          backgroundImage: "url('/bg.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "blur(4px)",
         }}
       />
 
       {/* ============================================================ */}
-      {/*  MODAL OVERLAY — Nomor Peserta                                */}
+      {/*  MODAL OVERLAY — Nomor Peserta & Password                     */}
       {/* ============================================================ */}
       <AnimatePresence>
         {phase === "modal" && (
@@ -181,45 +190,81 @@ export default function GauntletHub() {
               className="bg-white rounded-2xl shadow-xl border border-zinc-200 p-8 w-full max-w-sm mx-4"
             >
               <h2 className="text-xl font-bold text-zinc-800 text-center mb-1">
-                Enter Nomor Peserta
+                Enter Gauntlet
               </h2>
               <p className="text-xs text-zinc-400 text-center mb-6">
-                Your progress is saved locally under this ID.
+                Please provide your participant ID and the event password.
               </p>
 
-              <input
-                ref={inputRef}
-                type="text"
-                value={inputValue}
-                onChange={(e) => {
-                  setInputValue(e.target.value);
-                  if (inputError) setInputError(false);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleModalSubmit();
-                }}
-                placeholder="e.g. 12345"
-                className={[
-                  "w-full px-4 py-3 rounded-xl border text-sm text-zinc-800 placeholder-zinc-300",
-                  "focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400",
-                  "transition-all duration-200",
-                  inputError ? "border-red-400 ring-2 ring-red-200" : "border-zinc-300",
-                ].join(" ")}
-              />
-              {inputError && (
-                <p className="text-xs text-red-500 mt-1.5 ml-1">
-                  Please enter your nomor peserta.
-                </p>
-              )}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-600 mb-1.5 ml-1 uppercase tracking-wider">
+                    Nomor Peserta
+                  </label>
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => {
+                      setInputValue(e.target.value);
+                      if (inputError) setInputError(false);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleModalSubmit();
+                    }}
+                    placeholder="e.g. 12345"
+                    className={[
+                      "w-full px-4 py-3 rounded-xl border text-sm text-zinc-800 placeholder-zinc-300",
+                      "focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400",
+                      "transition-all duration-200",
+                      inputError ? "border-red-400 ring-2 ring-red-200" : "border-zinc-300",
+                    ].join(" ")}
+                  />
+                  {inputError && (
+                    <p className="text-xs text-red-500 mt-1.5 ml-1">
+                      Please enter your nomor peserta.
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-600 mb-1.5 ml-1 uppercase tracking-wider">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    value={passwordValue}
+                    onChange={(e) => {
+                      setPasswordValue(e.target.value);
+                      if (passwordError) setPasswordError(false);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleModalSubmit();
+                    }}
+                    placeholder="Enter event password"
+                    className={[
+                      "w-full px-4 py-3 rounded-xl border text-sm text-zinc-800 placeholder-zinc-300",
+                      "focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400",
+                      "transition-all duration-200",
+                      passwordError ? "border-red-400 ring-2 ring-red-200" : "border-zinc-300",
+                    ].join(" ")}
+                  />
+                  {passwordError && (
+                    <p className="text-xs text-red-500 mt-1.5 ml-1">
+                      Incorrect password.
+                    </p>
+                  )}
+                </div>
+              </div>
 
               <motion.button
                 type="button"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleModalSubmit}
-                className="w-full mt-5 px-4 py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-sm cursor-pointer hover:shadow-amber-500/30 transition-shadow"
+                className="w-full mt-6 px-4 py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-sm cursor-pointer hover:shadow-amber-500/30 transition-shadow"
               >
-                Enter Gauntlet
+                Access Arena
               </motion.button>
             </motion.div>
           </motion.div>
@@ -238,16 +283,16 @@ export default function GauntletHub() {
         <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-amber-500">
           ITBMO Gauntlet
         </h1>
-        <p className="text-sm text-zinc-400 mt-3 max-w-md mx-auto">
+        <p className="text-sm text-zinc-200 mt-3 max-w-md mx-auto drop-shadow-md">
           Win or lose, you only get one shot at each.
         </p>
         {phase === "ready" && participantId && (
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-xs text-zinc-400 mt-2"
+            className="text-xs text-zinc-200 mt-2 drop-shadow-md"
           >
-            Peserta: <span className="font-semibold text-zinc-600">{participantId}</span>
+            Peserta: <span className="font-semibold text-white">{participantId}</span>
             {completedCount > 0 && (
               <span className="ml-2 tabular-nums">
                 · {completedCount}/5 completed · {winCount} won
@@ -283,15 +328,15 @@ export default function GauntletHub() {
               <div
                 onClick={() => handleStageClick(stage)}
                 className={[
-                  "relative rounded-2xl overflow-hidden border transition-all duration-300",
+                  "relative rounded-2xl overflow-hidden border transition-all duration-300 backdrop-blur-md",
                   isLocked ? "pointer-events-none" : "",
                   isCompleted
-                    ? "opacity-50 cursor-not-allowed border-zinc-200 bg-zinc-100"
-                    : "cursor-pointer border-zinc-200 bg-white hover:border-amber-400/60 hover:shadow-md",
+                    ? "cursor-not-allowed border-white/10 bg-black/40"
+                    : "cursor-pointer border-white/20 bg-white/10 hover:border-amber-400/60 hover:bg-white/20 hover:shadow-[0_8px_30px_rgb(245,158,11,0.15)]",
                 ].join(" ")}
               >
                 {/* Decorative background pattern */}
-                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <div className={`absolute inset-0 pointer-events-none overflow-hidden ${isCompleted ? "opacity-40" : ""}`}>
                   {isLamp ? (
                     <div className="absolute inset-0 flex flex-wrap items-center justify-end gap-4 pr-6 opacity-[0.25]">
                       {Array.from({ length: 5 }).map((_, j) => (
@@ -323,16 +368,16 @@ export default function GauntletHub() {
                 </div>
 
                 {/* Card content */}
-                <div className="relative z-10 p-5">
+                <div className={`relative z-10 p-5 transition-opacity duration-300 ${isCompleted ? "opacity-50 grayscale" : ""}`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-3">
-                        <span className="text-lg font-bold text-zinc-800">
+                        <span className="text-lg font-bold text-white drop-shadow-sm">
                           {stage.title}
                         </span>
                         {result && <ResultBadge result={result} />}
                       </div>
-                      <p className="text-sm text-zinc-400 mt-1">
+                      <p className="text-sm text-zinc-200 mt-1 drop-shadow-sm">
                         {stage.subtitle}
                       </p>
                     </div>
@@ -342,7 +387,7 @@ export default function GauntletHub() {
                         animate={{ rotate: isExpanded ? 180 : 0 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <svg className="w-5 h-5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-5 h-5 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                       </motion.div>
@@ -381,12 +426,12 @@ export default function GauntletHub() {
                                 e.stopPropagation();
                                 handleLaunch(stage, false);
                               }}
-                              className="flex-1 px-3 py-2 rounded-full text-xs font-semibold bg-white text-zinc-700 border border-zinc-200 shadow-sm cursor-pointer hover:bg-zinc-50 transition-colors"
+                              className="flex-1 px-3 py-2 rounded-full text-xs font-semibold bg-white/10 text-white border border-white/20 shadow-sm cursor-pointer hover:bg-white/20 transition-colors backdrop-blur-sm"
                             >
                               Play Second
                             </motion.button>
                           </div>
-                          <p className="text-[11px] text-zinc-400 leading-relaxed">
+                          <p className="text-[11px] text-zinc-300 leading-relaxed">
                             {stage.rules}
                           </p>
                         </div>

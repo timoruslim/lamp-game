@@ -62,6 +62,9 @@ export default function Lamp({
     };
   }, [isError]);
 
+  /* ---- Hover state ---- */
+  const [isHovered, setIsHovered] = useState(false);
+
   /* ---- Click handler ---- */
   const handleClick = useCallback(() => {
     if (disabled) return;
@@ -75,25 +78,14 @@ export default function Lamp({
       onClick={handleClick}
       disabled={disabled}
       aria-label={`Bulb ${index + 1} — ${isOn ? "ON" : "OFF"}`}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
       whileHover={!disabled ? { scale: 1.12 } : undefined}
       whileTap={!disabled ? { scale: 0.92 } : undefined}
       className="relative flex items-center justify-center"
       style={{ outline: "none" }}
     >
-      {/* ---- Outer glow ring (visible when ON) ---- */}
-      <motion.div
-        animate={{
-          opacity: isOn ? 1 : 0,
-          scale: isOn ? 1 : 0.8,
-        }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        className="absolute inset-0 rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(251,191,36,0.2) 0%, transparent 70%)",
-          filter: "blur(8px)",
-        }}
-      />
+
 
       {/* ---- Bulb body ---- */}
       <motion.div
@@ -109,13 +101,18 @@ export default function Lamp({
         <img
           src={isOn ? "/icons/lamp_on.png" : "/icons/lamp_off.png"}
           alt={`Lamp ${index + 1}`}
-          className="w-full h-full object-contain"
+          className="w-full h-full object-contain transition-all duration-300"
+          style={{
+            filter: isOn
+              ? `drop-shadow(0 0 8px rgba(251,191,36,0.8)) drop-shadow(0 0 ${isHovered && !disabled ? '32px rgba(251,191,36,0.7)' : '20px rgba(251,191,36,0.45)'})`
+              : `drop-shadow(0 0 4px rgba(255,255,255,0.5)) drop-shadow(0 0 ${isHovered && !disabled ? '20px rgba(255,255,255,0.7)' : '12px rgba(255,255,255,0.5)'})`,
+          }}
         />
         {/* Filament / index label */}
         <span
           className={[
             "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -mt-3 text-[10px] sm:text-xs font-mono font-bold transition-colors duration-200",
-            isOn ? "text-amber-950" : "text-zinc-600",
+            isOn ? "text-amber-950" : "text-white",
           ].join(" ")}
         >
           {index + 1}

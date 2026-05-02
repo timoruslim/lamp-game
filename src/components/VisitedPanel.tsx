@@ -36,12 +36,12 @@ export default function VisitedPanel({
   }, [highlightState, visitedStates.length]);
 
   return (
-    <div className="flex flex-row xl:flex-col fixed bottom-0 left-0 right-0 xl:left-auto xl:right-4 xl:top-4 xl:bottom-4 xl:w-72 h-20 xl:h-auto bg-white/95 xl:bg-white/80 backdrop-blur-md border-t xl:border border-zinc-200 xl:rounded-2xl overflow-hidden z-20 shadow-lg">
-      <div className="flex-shrink-0 flex flex-col justify-center px-4 xl:p-4 border-r xl:border-r-0 xl:border-b border-zinc-200/50 bg-zinc-50/50">
-        <h2 className="text-[10px] xl:text-xs uppercase tracking-widest font-semibold text-zinc-500">
+    <div className="flex flex-row xl:flex-col fixed bottom-0 left-0 right-0 xl:left-auto xl:right-4 xl:top-4 xl:bottom-4 xl:w-72 h-20 xl:h-auto bg-white/10 backdrop-blur-md border-t xl:border border-white/20 xl:rounded-2xl overflow-hidden z-20 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+      <div className="flex-shrink-0 flex flex-col justify-center px-4 xl:p-4 border-r xl:border-r-0 xl:border-b border-white/10 bg-black/20">
+        <h2 className="text-[10px] xl:text-xs uppercase tracking-widest font-semibold text-zinc-300 drop-shadow-sm">
           History
         </h2>
-        <p className="hidden xl:block text-[10px] text-zinc-400 mt-1">
+        <p className="hidden xl:block text-[10px] text-zinc-400 mt-1 drop-shadow-sm">
           All played moves. No state can be repeated.
         </p>
       </div>
@@ -62,11 +62,11 @@ export default function VisitedPanel({
                 className={[
                   "flex-shrink-0 flex items-center justify-between p-2 px-3 rounded-lg border transition-colors gap-3",
                   isHighlighted
-                    ? "bg-red-50 border-red-300/60"
-                    : "bg-zinc-50 border-zinc-200/60",
+                    ? "bg-red-500/20 border-red-400/30"
+                    : "bg-white/5 border-white/10 hover:bg-white/10",
                 ].join(" ")}
               >
-                <span className="text-[10px] font-mono text-zinc-400">
+                <span className="text-[10px] font-mono text-zinc-300">
                   #{idx}
                 </span>
 
@@ -77,10 +77,10 @@ export default function VisitedPanel({
                       <div
                         key={i}
                         className={[
-                          "w-2.5 h-2.5 rounded-full",
+                          "w-2.5 h-2.5 rounded-full transition-colors",
                           on
-                            ? "bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.4)]"
-                            : "bg-zinc-300",
+                            ? "bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]"
+                            : "bg-white/10 border border-white/20",
                         ].join(" ")}
                       />
                     );

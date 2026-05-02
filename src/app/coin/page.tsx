@@ -307,12 +307,15 @@ function CoinGameInner() {
   }, [gauntletMode]);
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen bg-slate-50 overflow-hidden text-zinc-800">
+    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden text-zinc-100">
       {/* Background glow */}
       <div
-        className="pointer-events-none fixed inset-0 z-0"
+        className="pointer-events-none fixed inset-0 z-0 scale-105"
         style={{
-          background: "radial-gradient(ellipse 60% 40% at 50% 0%, rgba(245,158,11,0.06) 0%, transparent 70%)",
+          backgroundImage: "url('/bg.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "blur(4px)",
         }}
       />
 
@@ -374,11 +377,11 @@ function CoinGameInner() {
                 >
                   <span className="text-5xl opacity-80 font-serif">$</span>
                 </motion.div>
-                <div className="text-center space-y-2">
-                  <h1 className="text-5xl sm:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-amber-600 to-amber-800">
+                <div className="text-center space-y-2 drop-shadow-md">
+                  <h1 className="text-5xl sm:text-6xl font-bold tracking-tight text-white drop-shadow-lg">
                     Coin Game
                   </h1>
-                  <p className="text-lg text-zinc-400 group-hover:text-amber-600 transition-colors mt-5 font-medium">
+                  <p className="text-lg text-zinc-300 group-hover:text-white transition-colors mt-5 font-medium">
                     Click anywhere or press Enter to play
                   </p>
                 </div>
@@ -396,11 +399,11 @@ function CoinGameInner() {
               transition={{ duration: 0.35 }}
               className="flex flex-col items-center justify-center gap-10 w-full max-w-xl mx-auto px-6"
             >
-              <div className="text-center space-y-2">
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-800">
+              <div className="text-center space-y-2 drop-shadow-md">
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
                   Configure Game
                 </h1>
-                <p className="text-sm text-zinc-500 max-w-xs mx-auto leading-relaxed">
+                <p className="text-sm text-zinc-300 max-w-xs mx-auto leading-relaxed">
                   Choose the grid dimensions for the game.
                 </p>
               </div>
@@ -504,11 +507,11 @@ function CoinGameInner() {
               transition={{ duration: 0.3 }}
               className="flex flex-col items-center gap-8"
             >
-              <div className="text-center space-y-1">
-                <p className="text-xs uppercase tracking-widest text-zinc-400">
+              <div className="text-center space-y-1 drop-shadow-md">
+                <p className="text-xs uppercase tracking-widest text-zinc-200">
                   {phase === "ending" ? "Game Over" : isPlayerTurn ? "Your Turn" : "Bot is thinking…"}
                 </p>
-                <p className="text-[11px] text-zinc-400 tabular-nums">
+                <p className="text-[11px] text-zinc-300 tabular-nums">
                   Coins placed: {board.filter((c) => c === 1).length}
                 </p>
               </div>
@@ -628,7 +631,7 @@ function CoinGameInner() {
 
 export default function CoinGame() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-50" />}>
+    <Suspense fallback={<div className="min-h-screen bg-transparent" />}>
       <CoinGameInner />
     </Suspense>
   );
